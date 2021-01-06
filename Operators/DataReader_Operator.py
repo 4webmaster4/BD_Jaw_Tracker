@@ -22,15 +22,15 @@ def ShowMessageBox(message="", title="INFO", icon="INFO"):
 
 #######################################################################################
 # Data reading operator
-class Facebow_OT_DataReader(bpy.types.Operator):
+class JawTracker_OT_DataReader(bpy.types.Operator):
     """ Start data reading """
 
-    bl_idname = "facebow.datareader"
+    bl_idname = "jawtracker.datareader"
     bl_label = "Start Read Data"
 
 
     def execute(self, context):
-        FacebowProps = bpy.context.scene.FacebowProps
+        JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
 
         def DataToCvMatrix(DataFile):
@@ -146,7 +146,7 @@ class Facebow_OT_DataReader(bpy.types.Operator):
 
             X, Y = WindowWidth, WindowHeight = (500, 100)
             BackGround = np.ones((Y, X, 3), dtype=np.uint8) * 255
-            Title = "Facebow progress"
+            Title = "JawTracker progress"
             # Progress bar Parameters :
             maxFill = X - 70
             minFill = 40
@@ -249,7 +249,7 @@ class Facebow_OT_DataReader(bpy.types.Operator):
         ########################################################################################
         ######################################################################################
 
-        DataFile = FacebowProps.TrackedData  # DataFile
+        DataFile = JawTrackerProps.TrackedData  # DataFile
 
         (
             width,
@@ -306,7 +306,7 @@ class Facebow_OT_DataReader(bpy.types.Operator):
 #################################################################################################
 
 classes = [
-    Facebow_OT_DataReader,
+    JawTracker_OT_DataReader,
 ]
 
 

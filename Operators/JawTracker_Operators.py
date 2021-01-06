@@ -23,19 +23,19 @@ def ShowMessageBox(message="", title="INFO", icon="INFO"):
 
 #######################################################################################
 # Tracking operator
-class Facebow_OT_StarTrack(bpy.types.Operator):
+class JawTracker_OT_StarTrack(bpy.types.Operator):
     """ description of this Operator """
 
-    bl_idname = "facebow.startrack"
+    bl_idname = "jawtracker.startrack"
     bl_label = "Start Tracking"
 
     def execute(self, context):
-        FacebowProps = bpy.context.scene.FacebowProps
+        JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
         #############################################################################################
         # create file and erase :
 
-        with open(FacebowProps.TrackFile + "_DataFile.txt", "w+") as fw:
+        with open(JawTrackerProps.TrackFile + "_DataFile.txt", "w+") as fw:
             fw.truncate(0)
 
         #############################################################################################
@@ -45,12 +45,12 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
         ARUCO_PARAMETERS = aruco.DetectorParameters_create()
         ARUCO_DICT = aruco.Dictionary_get(aruco.DICT_APRILTAG_36h11)
 
-        if FacebowProps.TrackingType == "Precision":
+        if JawTrackerProps.TrackingType == "Precision":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_APRILTAG
         else:
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
         
-        CalibFile = os.path.join(FacebowProps.UserProjectDir, "calibration.pckl")
+        CalibFile = os.path.join(JawTrackerProps.UserProjectDir, "calibration.pckl")
 
         ##############################################################################################
         # Upper board corners
@@ -125,7 +125,7 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
         UpBoard = aruco.Board_create(Board_corners_upper, ARUCO_DICT, UpBoard_ids)
 
         ##############################################################################################
-        if not os.path.exists(FacebowProps.TrackFile):
+        if not os.path.exists(JawTrackerProps.TrackFile):
             message = " Invalid Track file check and retry."
             ShowMessageBox(message=message, icon="COLORSET_01_VEC")
             return {"CANCELLED"}
@@ -142,7 +142,7 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
                 ShowMessageBox(message=message, icon="COLORSET_01_VEC")
                 return {"CANCELLED"}
 
-        cap = cv2.VideoCapture(FacebowProps.TrackFile)
+        cap = cv2.VideoCapture(JawTrackerProps.TrackFile)
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         totalstr = str(total)
         count = 1
@@ -175,7 +175,7 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
             "Width": width,
             "Heihgt": height,
             "Fps": fps,
-            "TrackingType": FacebowProps.TrackingType,
+            "TrackingType": JawTrackerProps.TrackingType,
             "Stream": {},
         }
         while True:
@@ -311,7 +311,7 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
                 cv2.destroyAllWindows()
                 break
 
-        with open(FacebowProps.TrackFile + "_DataFile.txt", "a") as DataFile:
+        with open(JawTrackerProps.TrackFile + "_DataFile.txt", "a") as DataFile:
             Data = str(Data_dict)
             DataFile.write(Data)
 
@@ -323,7 +323,7 @@ class Facebow_OT_StarTrack(bpy.types.Operator):
 #################################################################################################
 
 classes = [
-    Facebow_OT_StarTrack,
+    JawTracker_OT_StarTrack,
 ]
 
 

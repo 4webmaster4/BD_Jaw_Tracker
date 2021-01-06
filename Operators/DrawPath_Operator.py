@@ -2,6 +2,7 @@ import bpy
 import os
 import time
 
+
 # Addon Imports :
 
 # Global variables :
@@ -13,42 +14,26 @@ def ShowMessageBox(message="", title="INFO", icon="INFO"):
 
     bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
 
+    DataReader = context.scene.DataReader_Operator
+
 
 #######################################################################################
 ########################### Model Operations : Operators ##############################
 
 #######################################################################################
 # Add meshes of boards with markers
-class JawTracker_OT_SmoothKeyframes(bpy.types.Operator):
-    """ Pick Lower Board """
+class JawTracker_OT_DrawPath(bpy.types.Operator):
+    """ Draw or redraw motion path """
 
-    bl_idname = "jawtracker.smoothkeyframes"
-    bl_label = "Smooth keyframes"
+    bl_idname = "jawtracker.drawpath"
+    bl_label = "Draw motion path"
 
     def execute(self, context):
         JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
         active_object = bpy.context.selected_objects
         
-
-        if not active_object:
-            print("Pick Object!")
-            self.report({'ERROR'}, "Pick Lower board!")
-        else:
-            current_area = bpy.context.area.type
-            layer = bpy.context.view_layer
-            
-            # change to graph editor
-            bpy.context.area.type = "GRAPH_EDITOR"
-
-            # smooth curves of all selected bones
-            bpy.ops.graph.smooth()
-
-            # switch back to original area
-            bpy.context.area.type = current_area
-            self.report({'INFO'}, "DONE!")
-                
-        
+        bpy.ops.object.paths_calculate(start_frame=0, end_frame=DataReader.TotalFrames)
         
         return {"FINISHED"}
 
@@ -58,7 +43,7 @@ class JawTracker_OT_SmoothKeyframes(bpy.types.Operator):
 #################################################################################################
 
 classes = [
-    JawTracker_OT_SmoothKeyframes,
+    JawTracker_OT_DrawPath,
 ]
 
 

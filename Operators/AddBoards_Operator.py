@@ -19,14 +19,14 @@ def ShowMessageBox(message="", title="INFO", icon="INFO"):
 
 #######################################################################################
 # Add meshes of boards with markers
-class Facebow_OT_AddBoards(bpy.types.Operator):
+class JawTracker_OT_AddBoards(bpy.types.Operator):
     """ Add Boards """
 
-    bl_idname = "facebow.addboards"
+    bl_idname = "jawtracker.addboards"
     bl_label = "Add Boards with Markers"
 
     def execute(self, context):
-        FacebowProps = bpy.context.scene.FacebowProps
+        JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
         
         #set scene units 
@@ -104,7 +104,7 @@ class Facebow_OT_AddBoards(bpy.types.Operator):
 #################################################################################################
 
 classes = [
-    Facebow_OT_AddBoards,
+    JawTracker_OT_AddBoards,
 ]
 
 

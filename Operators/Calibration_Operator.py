@@ -23,14 +23,14 @@ def ShowMessageBox(message=[], title="INFO", icon="INFO"):
 
 #######################################################################################
 # Test_Operator_01
-class Facebow_OT_Calibration(bpy.types.Operator):
+class JawTracker_OT_Calibration(bpy.types.Operator):
     """ Start calibration """
 
-    bl_idname = "facebow.calibration"
+    bl_idname = "jawtracker.calibration"
     bl_label = "Start Calibration"
 
     def execute(self, context):
-        FacebowProps = bpy.context.scene.FacebowProps
+        JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
 
         # ChAruco board variables
@@ -42,8 +42,8 @@ class Facebow_OT_Calibration(bpy.types.Operator):
         CHARUCO_BOARD = aruco.CharucoBoard_create(
             squaresX=CHARUCOBOARD_COLCOUNT,
             squaresY=CHARUCOBOARD_ROWCOUNT,
-            squareLength=FacebowProps.UserSquareLength,
-            markerLength=FacebowProps.UserMarkerLength,
+            squareLength=JawTrackerProps.UserSquareLength,
+            markerLength=JawTrackerProps.UserMarkerLength,
             dictionary=ARUCO_DICT,
         )
 
@@ -56,9 +56,9 @@ class Facebow_OT_Calibration(bpy.types.Operator):
         # I'm using a set of images taken with the camera with the naming convention:
         # 'camera-pic-of-charucoboard-<NUMBER>.jpg'
         # All images used should be the same size, which if taken with the same camera shouldn't be a problem
-        # images = Facebow_Props.UserProjectDir
-        # images = glob.glob(FacebowProps.UserProjectDir+'*.*')
-        images = glob.glob(os.path.join(FacebowProps.CalibImages, "*"))
+        # images = JawTracker_Props.UserProjectDir
+        # images = glob.glob(JawTrackerProps.UserProjectDir+'*.*')
+        images = glob.glob(os.path.join(JawTrackerProps.CalibImages, "*"))
         # Loop through images glob'ed
         if images:
 
@@ -184,14 +184,14 @@ class Facebow_OT_Calibration(bpy.types.Operator):
         )
 
         # Print matrix and distortion coefficient to the console
-        print(FacebowProps.UserSquareLength)
-        print(FacebowProps.UserMarkerLength)
+        print(JawTrackerProps.UserSquareLength)
+        print(JawTrackerProps.UserMarkerLength)
         print(cameraMatrix)
         print(distCoeffs)
 
         # Save values to be used where matrix+dist is required, for instance for posture estimation
         # I save files in a pickle file, but you can use yaml or whatever works for you
-        f = open(FacebowProps.UserProjectDir + "calibration.pckl", "wb")
+        f = open(JawTrackerProps.UserProjectDir + "calibration.pckl", "wb")
         pickle.dump((cameraMatrix, distCoeffs, rvecs, tvecs), f)
         f.close()
 
@@ -201,7 +201,7 @@ class Facebow_OT_Calibration(bpy.types.Operator):
         # Print to console our success
         print(
             "Calibration successful. Calibration file used: {}".format(
-                FacebowProps.UserProjectDir + "calibration.pckl"
+                JawTrackerProps.UserProjectDir + "calibration.pckl"
             )
         )
 
@@ -213,7 +213,7 @@ class Facebow_OT_Calibration(bpy.types.Operator):
 #################################################################################################
 
 classes = [
-    Facebow_OT_Calibration,
+    JawTracker_OT_Calibration,
 ]
 
 

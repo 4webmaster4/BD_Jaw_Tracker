@@ -22,12 +22,12 @@
 # ##### END GPL LICENSE BLOCK #####
 ##############################################################################################
 bl_info = {
-    "name": "Facebow_aruco",  ###################Addon name
+    "name": "BD_Jaw_Tracker",  ###################Addon name
     "authors": "Dr.Ilya Fomenko",
     "Dr. Issam Dakir" "version": (1, 1, 0),
     "blender": (2, 90, 1),  ################# Blender working version
     "location": "3D View -> UI SIDE PANEL ",
-    "description": "Facebow aruco",  ########### Addon description
+    "description": "Jaw tracker",  ########### Addon description
     "warning": "",
     "wiki_url": "",
     "tracker_url": "",
@@ -115,22 +115,24 @@ try:
     from cv2 import aruco
 
     # Addon modules imports :
-    from . import FacebowProps, FacebowPanel
-    from .Operators import Facebow_Operators
+    from . import JawTrackerProps, JawTrackerPanel
+    from .Operators import JawTracker_Operators
     from .Operators import Calibration_Operator
     from .Operators import DataReader_Operator
     from .Operators import AddBoards_Operator
     from .Operators import SmoothKeyframes_Operator
+    from .Operators import DrawPath_Operator
    
 
     addon_modules = [
-        FacebowProps,
-        FacebowPanel,
-        Facebow_Operators,
+        JawTrackerProps,
+        JawTrackerPanel,
+        JawTracker_Operators,
         Calibration_Operator,
         DataReader_Operator,
         AddBoards_Operator,
         SmoothKeyframes_Operator,
+        DrawPath_Operator,
         
     ]
     ############################################################################################
@@ -156,21 +158,23 @@ except ImportError:
     if isConnected():
         BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
         # Addon modules imports :
-        from . import FacebowProps, FacebowPanel
-        from .Operators import Facebow_Operators
+        from . import JawTrackerProps, JawTrackerPanel
+        from .Operators import JawTracker_Operators
         from .Operators import Calibration_Operator
         from .Operators import DataReader_Operator
         from .Operators import AddBoards_Operator
         from .Operators import SmoothKeyframes_Operator
+        from .Operators import DrawPath_Operator
 
         addon_modules = [
-            FacebowProps,
-            FacebowPanel,
-            Facebow_Operators,
+            JawTrackerProps,
+            JawTrackerPanel,
+            JawTracker_Operators,
             Calibration_Operator,
             DataReader_Operator,
             AddBoards_Operator,
             SmoothKeyframes_Operator,
+            DrawPath_Operator,
         ]
         ############################################################################################
         # Registration :

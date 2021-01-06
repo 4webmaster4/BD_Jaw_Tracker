@@ -9,10 +9,10 @@ from bpy.props import (
     IntProperty,
 )
 
-# FacebowProps group property :
+# JawTrackerProps group property :
 
 
-class FacebowProps(bpy.types.PropertyGroup):
+class JawTrackerProps(bpy.types.PropertyGroup):
 
     # String Props :
     #########################################################################################
@@ -20,7 +20,7 @@ class FacebowProps(bpy.types.PropertyGroup):
     UserProjectDir: StringProperty(
         name="",
         default="",
-        description="Location of FaceBow project Directory",
+        description="Location of JawTracker project Directory",
         subtype="DIR_PATH",
     )
 
@@ -72,7 +72,7 @@ class FacebowProps(bpy.types.PropertyGroup):
 #################################################################################################
 
 classes = [
-    FacebowProps,
+    JawTrackerProps,
 ]
 
 
@@ -81,7 +81,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.FacebowProps = bpy.props.PointerProperty(type=FacebowProps)
+    bpy.types.Scene.JawTrackerProps = bpy.props.PointerProperty(type=JawTrackerProps)
 
 
 def unregister():
@@ -89,4 +89,4 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.FacebowProps
+    del bpy.types.Scene.JawTrackerProps
