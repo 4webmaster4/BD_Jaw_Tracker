@@ -27,7 +27,7 @@ bl_info = {
     "Dr. Issam Dakir" "version": (1, 1, 0),
     "blender": (2, 90, 1),  ################# Blender working version
     "location": "3D View -> UI SIDE PANEL ",
-    "description": "Jaw tracker",  ########### Addon description
+    "description": "Blender Dental Jaw Tracker using OpenCV and aruco module",  ########### Addon description
     "warning": "",
     "wiki_url": "",
     "tracker_url": "",
@@ -55,7 +55,7 @@ for path in sysPaths:
     if not path in sys.path:
         sys.path.append(path)
 
-Requirements = ["opencv-contrib-python"]
+Requirements = ["opencv-contrib-python==4.4.0.46"]
 
 
 # Popup message box function :
@@ -115,25 +115,13 @@ try:
     from cv2 import aruco
 
     # Addon modules imports :
-    from . import JawTrackerProps, JawTrackerPanel
-    from .Operators import JawTracker_Operators
-    from .Operators import Calibration_Operator
-    from .Operators import DataReader_Operator
-    from .Operators import AddBoards_Operator
-    from .Operators import SmoothKeyframes_Operator
-    from .Operators import DrawPath_Operator
-   
+    from . import BDJawTrackerProps, BDJawTrackerPanel
+    from .Operators import BDJawTracker_Operators
 
     addon_modules = [
-        JawTrackerProps,
-        JawTrackerPanel,
-        JawTracker_Operators,
-        Calibration_Operator,
-        DataReader_Operator,
-        AddBoards_Operator,
-        SmoothKeyframes_Operator,
-        DrawPath_Operator,
-        
+        BDJawTrackerProps,
+        BDJawTrackerPanel,
+        BDJawTracker_Operators,
     ]
     ############################################################################################
     # Registration :
@@ -158,23 +146,13 @@ except ImportError:
     if isConnected():
         BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
         # Addon modules imports :
-        from . import JawTrackerProps, JawTrackerPanel
-        from .Operators import JawTracker_Operators
-        from .Operators import Calibration_Operator
-        from .Operators import DataReader_Operator
-        from .Operators import AddBoards_Operator
-        from .Operators import SmoothKeyframes_Operator
-        from .Operators import DrawPath_Operator
+        from . import BDJawTrackerProps, BDJawTrackerPanel
+        from .Operators import BDJawTracker_Operators
 
         addon_modules = [
-            JawTrackerProps,
-            JawTrackerPanel,
-            JawTracker_Operators,
-            Calibration_Operator,
-            DataReader_Operator,
-            AddBoards_Operator,
-            SmoothKeyframes_Operator,
-            DrawPath_Operator,
+            BDJawTrackerProps,
+            BDJawTrackerPanel,
+            BDJawTracker_Operators,
         ]
         ############################################################################################
         # Registration :

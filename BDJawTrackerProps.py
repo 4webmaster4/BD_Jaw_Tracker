@@ -9,10 +9,10 @@ from bpy.props import (
     IntProperty,
 )
 
-# JawTrackerProps group property :
+# BDJawTrackerProps group property :
 
 
-class JawTrackerProps(bpy.types.PropertyGroup):
+class BDJawTrackerProps(bpy.types.PropertyGroup):
 
     # String Props :
     #########################################################################################
@@ -20,7 +20,7 @@ class JawTrackerProps(bpy.types.PropertyGroup):
     UserProjectDir: StringProperty(
         name="",
         default="",
-        description="Location of JawTracker project Directory",
+        description="Location of BDJawTracker project Directory",
         subtype="DIR_PATH",
     )
 
@@ -52,8 +52,6 @@ class JawTrackerProps(bpy.types.PropertyGroup):
         description="Marker length in meters", default=0.0192, step=1, precision=4
     )
 
-        
-    
     #####################
 
     Tracking_Types = ["Precision", "Fast"]
@@ -66,13 +64,15 @@ class JawTrackerProps(bpy.types.PropertyGroup):
         items=items, description="Tracking method", default="Precision"
     )
 
+    AlignModalState: BoolProperty(description="Align Modal state ", default=False)
+
 
 #################################################################################################
 # Registration :
 #################################################################################################
 
 classes = [
-    JawTrackerProps,
+    BDJawTrackerProps,
 ]
 
 
@@ -81,7 +81,9 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.JawTrackerProps = bpy.props.PointerProperty(type=JawTrackerProps)
+    bpy.types.Scene.BDJawTrackerProps = bpy.props.PointerProperty(
+        type=BDJawTrackerProps
+    )
 
 
 def unregister():
@@ -89,4 +91,4 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.JawTrackerProps
+    del bpy.types.Scene.BDJawTrackerProps
