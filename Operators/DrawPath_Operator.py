@@ -14,9 +14,7 @@ def ShowMessageBox(message="", title="INFO", icon="INFO"):
 
     bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
 
-    DataReader = context.scene.DataReader_Operator
-
-
+    
 #######################################################################################
 ########################### Model Operations : Operators ##############################
 
@@ -29,11 +27,12 @@ class JawTracker_OT_DrawPath(bpy.types.Operator):
     bl_label = "Draw motion path"
 
     def execute(self, context):
+        scene = bpy.context.scene
         JawTrackerProps = bpy.context.scene.JawTrackerProps
         start = time.perf_counter()
         active_object = bpy.context.selected_objects
+        bpy.ops.object.paths_calculate(start_frame=scene.frame_start, end_frame=scene.frame_end)
         
-        bpy.ops.object.paths_calculate(start_frame=0, end_frame=DataReader.TotalFrames)
         
         return {"FINISHED"}
 
