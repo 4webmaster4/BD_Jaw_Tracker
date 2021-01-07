@@ -6,6 +6,7 @@ import numpy as np
 import cv2.aruco as aruco
 import pickle
 import glob
+import threading
 
 # Addon Imports :
 
@@ -907,6 +908,27 @@ class BDJawTracker_OT_SmoothKeyframes(bpy.types.Operator):
         return {"FINISHED"}
 
 
+#######################################################################################
+# Draw or redraw motion path operator :
+#######################################################################################
+class BDJawTracker_OT_DrawPath(bpy.types.Operator):
+    """ Draw or redraw motion path """
+
+    bl_idname = "bdjawtracker.drawpath"
+    bl_label = "Draw motion path"
+
+    def execute(self, context):
+        scene = bpy.context.scene
+        JawTrackerProps = bpy.context.scene.BDJawTrackerProps
+        start = time.perf_counter()
+        active_object = bpy.context.selected_objects
+        bpy.ops.object.paths_calculate(start_frame=scene.frame_start, end_frame=scene.frame_end)
+        
+        
+        return {"FINISHED"}
+
+#######################################################################################
+
 # Popup message box function :
 def ShowMessageBox(message=[], title="INFO", icon="INFO"):
     def draw(self, context):
@@ -1279,6 +1301,7 @@ classes = [
     BDJawTracker_OT_SmoothKeyframes,
     BDJawTracker_OT_AlignPoints,
     BDJawTracker_OT_AlignPointsInfo,
+    BDJawTracker_OT_DrawPath,
 ]
 
 

@@ -210,6 +210,9 @@ class BDJAWTRACKER_PT_panel2(bpy.types.Panel):
         row.operator("bdjawtracker.datareader")
         row = layout.row()
         row.operator("bdjawtracker.smoothkeyframes")
+        row = layout.row()
+        row.operator("bdjawtracker.drawpath")
+
 
 
 ##################################################################################
