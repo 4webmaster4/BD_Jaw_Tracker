@@ -55,7 +55,7 @@ for path in sysPaths:
     if not path in sys.path:
         sys.path.append(path)
 
-Requirements = ["opencv-contrib-python==4.4.0.46"]
+#Requirements = ["opencv-contrib-python==4.4.0.46"]
 
 
 # Popup message box function :
