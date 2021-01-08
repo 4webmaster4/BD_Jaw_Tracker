@@ -46,10 +46,10 @@ class BDJawTrackerProps(bpy.types.PropertyGroup):
     )
 
     UserSquareLength: FloatProperty(
-        description="Square length in meters", default=0.0382, step=1, precision=4
+        description="Square length in meters", default=0.0244, step=1, precision=4
     )
     UserMarkerLength: FloatProperty(
-        description="Marker length in meters", default=0.0192, step=1, precision=4
+        description="Marker length in meters", default=0.0123, step=1, precision=4
     )
 
     #####################
