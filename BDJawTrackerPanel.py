@@ -11,11 +11,11 @@ yellow_point = "KEYTYPE_KEYFRAME_VEC"
 blue_point = "KEYTYPE_BREAKDOWN_VEC"
 
 
-class BDJAWTRACKER_PT_main_panel(bpy.types.Panel):
+class BDJAWTRACKER_PT_MainPanel(bpy.types.Panel):
     """ This Panel description """
 
     bl_idname = (
-        "BDJAWTRACKER_PT_main_panel"  # Not importatnt alwas the same as class name
+        "BDJAWTRACKER_PT_MainPanel"  # Not importatnt alwas the same as class name
     )
     bl_label = " BLENDER DENTAL JAW TRACKER "  # this is the title (Top panel bare)
     bl_space_type = "VIEW_3D"  # always the same if you want side panel
@@ -29,10 +29,12 @@ class BDJAWTRACKER_PT_main_panel(bpy.types.Panel):
         col.label(text="VERSION : 2021.01.05")
 
 
-class BDJAWTRACKER_PT_panel1(bpy.types.Panel):
+class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
     """ This Panel description """
 
-    bl_idname = "BDJAWTRACKER_PT_panel1"  # Not importatnt alwas the same as class name
+    bl_idname = (
+        "BDJAWTRACKER_PT_DataPreparation"  # Not importatnt alwas the same as class name
+    )
     bl_label = " DATA PREPARATION "  # this is the title (Top panel bare)
     bl_space_type = "VIEW_3D"  # always the same if you want side panel
     bl_region_type = "UI"  # always the same if you want side panel
@@ -81,17 +83,6 @@ class BDJAWTRACKER_PT_panel1(bpy.types.Panel):
                 col.prop(BDJawTracker_Props, "UserSquareLength", text="")
                 col = split.column()
                 col.prop(BDJawTracker_Props, "UserMarkerLength", text="")
-
-                # row = layout.row()
-                # row.prop(BDJawTracker_Props, "CalibImages", text="Calibration Images")
-                # row = layout.row()
-                # row.prop(
-                #     BDJawTracker_Props, "UserSquareLength", text="Square length in m"
-                # )
-                # row = layout.row()
-                # row.prop(
-                #     BDJawTracker_Props, "UserMarkerLength", text="Marker length in m"
-                # )
                 row = layout.row()
                 row.operator("bdjawtracker.calibration")
 
@@ -112,18 +103,16 @@ class BDJAWTRACKER_PT_panel1(bpy.types.Panel):
                 col = split.column()
                 col.prop(BDJawTracker_Props, "TrackingType", text="")
 
-                # row = layout.row()
-                # row.prop(BDJawTracker_Props, "TrackFile", text="Video-Track")
-                # row = layout.row()
-                # row.prop(BDJawTracker_Props, "TrackingType", text="Tracking type")
                 row = layout.row()
                 row.operator("bdjawtracker.startrack")
 
 
-class BDJAWTRACKER_PT_panel2(bpy.types.Panel):
+class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
     """ This Panel description """
 
-    bl_idname = "BDJAWTRACKER_PT_panel2"  # Not importatnt alwas the same as class name
+    bl_idname = (
+        "BDJAWTRACKER_PT_DataRead"  # Not importatnt alwas the same as class name
+    )
     bl_label = " DATA READ "  # this is the title (Top panel bare)
     bl_space_type = "VIEW_3D"  # always the same if you want side panel
     bl_region_type = "UI"  # always the same if you want side panel
@@ -138,63 +127,7 @@ class BDJAWTRACKER_PT_panel2(bpy.types.Panel):
         CalibFile = os.path.join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
 
-        # Draw Addon UI :
-
         layout = self.layout
-
-        # row = layout.row()
-        # split = row.split()
-        # col = split.column()
-        # col.label(text="Project Directory")
-        # col = split.column()
-        # col.prop(BDJawTracker_Props, "UserProjectDir", text="")
-
-        # ProjDir = BDJawTracker_Props.UserProjectDir
-        # if os.path.exists(ProjDir):
-
-        #     if not os.path.exists(CalibFile):
-        #         row = layout.row()
-        #         split = row.split()
-        #         col = split.column()
-        #         col.label(text="Calibration Images")
-        #         col = split.column()
-        #         col.prop(BDJawTracker_Props, "CalibImages", text="")
-
-        #         row = layout.row()
-        #         split = row.split()
-        #         col = split.column()
-        #         col.label(text="Square length in meters :")
-        #         col = split.column()
-        #         col.label(text="Marker length in meters :")
-
-        #         row = layout.row()
-        #         split = row.split()
-        #         col = split.column()
-        #         col.prop(BDJawTracker_Props, "UserSquareLength", text="")
-        #         col = split.column()
-        #         col.prop(BDJawTracker_Props, "UserMarkerLength", text="")
-
-        #         # row = layout.row()
-        #         # row.prop(BDJawTracker_Props, "CalibImages", text="Calibration Images")
-        #         # row = layout.row()
-        #         # row.prop(
-        #         #     BDJawTracker_Props, "UserSquareLength", text="Square length in m"
-        #         # )
-        #         # row = layout.row()
-        #         # row.prop(
-        #         #     BDJawTracker_Props, "UserMarkerLength", text="Marker length in m"
-        #         # )
-        #         row = layout.row()
-        #         row.operator("bdjawtracker.calibration")
-
-        #     else:
-        #         layout.label(text="Camera Calibration OK!", icon=green_icon)
-        #         row = layout.row()
-        #         row.prop(BDJawTracker_Props, "TrackFile", text="Video-Track")
-        #         row = layout.row()
-        #         row.prop(BDJawTracker_Props, "TrackingType", text="Tracking type")
-        #         row = layout.row()
-        #         row.operator("bdjawtracker.startrack")
 
         row = layout.row()
         split = row.split()
@@ -214,7 +147,6 @@ class BDJAWTRACKER_PT_panel2(bpy.types.Panel):
         row.operator("bdjawtracker.drawpath")
 
 
-
 ##################################################################################
 class BDJAWTRACKER_PT_AlignPanel(bpy.types.Panel):
     """ Align Tools Panel"""
@@ -223,8 +155,8 @@ class BDJAWTRACKER_PT_AlignPanel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"  # blender 2.7 and lower = TOOLS
     bl_category = "BDJ-Tracker"
-    bl_label = "BD_JAW_TRACKER ALIGN TOOLS :"
-    # bl_options = {"DEFAULT_CLOSED"}
+    bl_label = "ALIGN TOOLS :"
+    bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
         BDJawTracker_Props = context.scene.BDJawTrackerProps
@@ -299,9 +231,9 @@ class BDJAWTRACKER_PT_AlignPanel(bpy.types.Panel):
 #################################################################################################
 
 classes = [
-    BDJAWTRACKER_PT_main_panel,
-    BDJAWTRACKER_PT_panel1,
-    BDJAWTRACKER_PT_panel2,
+    BDJAWTRACKER_PT_MainPanel,
+    BDJAWTRACKER_PT_DataPreparation,
+    BDJAWTRACKER_PT_DataRead,
     BDJAWTRACKER_PT_AlignPanel,
 ]
 

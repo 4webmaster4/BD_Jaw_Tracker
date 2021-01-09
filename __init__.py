@@ -29,7 +29,7 @@ bl_info = {
     "location": "3D View -> UI SIDE PANEL ",
     "description": "Blender Dental Jaw Tracker using OpenCV and aruco module",  ########### Addon description
     "warning": "",
-    "wiki_url": "",
+    "doc_url": "",
     "tracker_url": "",
     "category": "Dental",  ################## Addon category
 }
@@ -38,11 +38,11 @@ bl_info = {
 #############################################################################################
 # Python imports :
 import sys, os, bpy, subprocess, socket, time, addon_utils, platform
+from importlib import import_module
 
 # activate unicode characters in windows CLI :
 if platform.system() == "Windows":
-    cmd = "chcp 65001"  # "& set PYTHONIOENCODING=utf-8"
-    subprocess.call(cmd, shell=True)
+    sys.stdout.reconfigure(encoding="cp65001")  # set PYTHONIOENCODING=utf-8"
 
 #############################################################
 # Add sys Paths : Addon directory and requirements directory
@@ -54,8 +54,13 @@ sysPaths = [addon_dir, requirements_path]
 for path in sysPaths:
     if not path in sys.path:
         sys.path.append(path)
-
-#Requirements = ["opencv-contrib-python==4.4.0.46"]
+Requirements = [
+    "opencv-contrib-python==4.4.0.46"
+]  # tested working versions 4.4.0.46 and 4.5.1.48 (update Jan/08/2021)
+CheckList = [
+    "cv2",
+    "cv2.aruco",
+]
 
 
 # Popup message box function :
@@ -83,22 +88,21 @@ def isConnected():
 
 
 def BlenderRequirementsPipInstall(path, modules):
-    # Download and install requirement if not Addon Packed :
-    Blender_python_path = sys.base_exec_prefix
-    # modules = ["SimpleITK", "opencv-contrib-python", "vtk"]
-    site_packages = os.path.join(Blender_python_path, "lib/site-packages/*.*")
+    # Download and install requirement if not AddonPacked version:
+    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
+    site_packages = os.path.join(Blender_python_path, "lib\\site-packages\\*.*")
     subprocess.call(
-        f"cd {Blender_python_path} && bin\python -m ensurepip ",
+        f"cd {Blender_python_path} && python -m ensurepip ",
         shell=True,
     )
     subprocess.call(
-        f"cd {Blender_python_path} && bin\python -m pip install -U pip ",
+        f"cd {Blender_python_path} && python -m pip install -U pip ",
         shell=True,
     )
     print("Blender pip upgraded")
 
     for module in modules:
-        command = f'cd "{Blender_python_path}" && bin\python -m pip install -U {module} --target "{path}"'
+        command = f'cd "{Blender_python_path}" && python -m pip install {module} --target "{path}"'
         subprocess.call(command, shell=True)
         print(f"{module}Downloaded and installed")
 
@@ -106,13 +110,45 @@ def BlenderRequirementsPipInstall(path, modules):
     print("requirements installed successfuly.")
 
 
+def PipInstallModules(modules):
+    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
+    site_packages = os.path.join(sys.base_exec_prefix, "lib\\site-packages")
+    subprocess.call(
+        f"cd {Blender_python_path} && python -m ensurepip ",
+        shell=True,
+    )
+    subprocess.call(
+        f"cd {Blender_python_path} && python -m pip install -U pip ",
+        shell=True,
+    )
+    print("Blender pip upgraded")
+
+    for module in modules:
+        command = f'cd "{Blender_python_path}" && python -m pip install {module} --target "{site_packages}"'
+        subprocess.call(command, shell=True)
+        print(f"{module}Downloaded and installed")
+
+
+def UninstallPipPackages(module):
+    print("Uninstaling ", module)
+    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
+    command = f'cd "{Blender_python_path}" && python -m pip uninstall {module}'
+    subprocess.call(command, shell=True)
+    print(f"{module} Uninstalled")
+
+
 ######################################################################################
 ######################################################################################
 #######################################################################################
+NotFoundPkgs = []
+for mod in CheckList:
+    try:
+        import_module(mod)
+    except ImportError:
+        NotFoundPkgs.append(mod)
 
-try:
-    import cv2
-    from cv2 import aruco
+if NotFoundPkgs == []:
+    print("Requirement already installed")
 
     # Addon modules imports :
     from . import BDJawTrackerProps, BDJawTrackerPanel
@@ -141,10 +177,15 @@ try:
     if __name__ == "__main__":
         register()
 
-except ImportError:
+if NotFoundPkgs:
+    print("Not found packages : ", NotFoundPkgs)
     ######################################################################################
     if isConnected():
-        BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
+        if NotFoundPkgs == ["cv2.aruco"]:
+            UninstallPipPackages(module="opencv")
+            PipInstallModules(modules=Requirements)
+        if "cv2" in NotFoundPkgs:
+            BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
         # Addon modules imports :
         from . import BDJawTrackerProps, BDJawTrackerPanel
         from .Operators import BDJawTracker_Operators
