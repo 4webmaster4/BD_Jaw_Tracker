@@ -37,6 +37,11 @@ class BDJawTracker_OT_AddBoards(bpy.types.Operator):
         BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
         start = time.perf_counter()
 
+        # set scene grid scale
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.spaces.active.overlay.grid_scale = 0.001
+        
         # set scene units
         Units = bpy.context.scene.unit_settings
         Units.system = "METRIC"
