@@ -182,7 +182,7 @@ if NotFoundPkgs:
     ######################################################################################
     if isConnected():
         if NotFoundPkgs == ["cv2.aruco"]:
-            UninstallPipPackages(module="opencv")
+            UninstallPipPackages(module="opencv-python")
             PipInstallModules(modules=Requirements)
         if "cv2" in NotFoundPkgs:
             BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
