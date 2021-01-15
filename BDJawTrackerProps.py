@@ -54,14 +54,15 @@ class BDJawTrackerProps(bpy.types.PropertyGroup):
 
     #####################
 
-    Tracking_Types = ["Precision", "Fast"]
+    #Tracking_Types = ["Precision", "Precision resized(1/2)", "Fast", "Fast resized(1/2)"]
+    Tracking_Types = ["Precision", "Fast resized(1/2)"]
     items = []
     for i in range(len(Tracking_Types)):
         item = (str(Tracking_Types[i]), str(Tracking_Types[i]), str(""), int(i))
         items.append(item)
 
     TrackingType: EnumProperty(
-        items=items, description="Tracking method", default="Precision"
+        items=items, description="Tracking method", default="Fast resized(1/2)"
     )
 
     AlignModalState: BoolProperty(description="Align Modal state ", default=False)

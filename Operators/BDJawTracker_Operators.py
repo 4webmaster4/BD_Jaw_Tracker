@@ -309,6 +309,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
     def execute(self, context):
         BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
         start = time.perf_counter()
+        resize=1
         #############################################################################################
         # create file and erase :
 
@@ -324,8 +325,16 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
 
         if BDJawTrackerProps.TrackingType == "Precision":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_APRILTAG
-        else:
+            resize=1
+        elif BDJawTrackerProps.TrackingType == "Fast":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+            resize=1
+        elif BDJawTrackerProps.TrackingType == "Precision resized(1/2)":
+            ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_APRILTAG
+            resize=2
+        elif BDJawTrackerProps.TrackingType == "Fast resized(1/2)":
+            ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+            resize=2
 
         CalibFile = os.path.join(BDJawTrackerProps.UserProjectDir, "calibration.pckl")
 
@@ -445,7 +454,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
 
         print(cameraMatrix)
         print(distCoeffs)
-
+        print(BDJawTrackerProps.TrackingType)
         #############################################################################################
         Data_dict = {
             "Width": width,
@@ -457,10 +466,13 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         while True:
             success, img = cap.read()
             imgGrey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            imgBlur = cv2.GaussianBlur(imgGrey, (11, 11), cv2.BORDER_DEFAULT)
-            # imgPyrDown = cv2.pyrDown(imgBlur)  # reduce the image by 2 times
+            #imgBlur = imgGrey
+            imgBlur = cv2.GaussianBlur(imgGrey, (7, 7), cv2.BORDER_DEFAULT)
+            if resize == 2:
+                imgBlur = cv2.pyrDown(imgBlur)  # reduce the image by 2 times
 
             cv2.namedWindow("img", cv2.WINDOW_NORMAL)
+            #cv2.namedWindow("imgBlur", cv2.WINDOW_NORMAL)
 
             # lists of ids and the corners beloning to each id
             corners, ids, rejected = aruco.detectMarkers(
@@ -492,7 +504,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                     LowCorners,
                     LowBoard_ids,
                     LowBoard,
-                    cameraMatrix,
+                    cameraMatrix/resize,
                     distCoeffs,
                     None,
                     None,
@@ -501,7 +513,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                     UpCorners,
                     UpBoard_ids,
                     UpBoard,
-                    cameraMatrix,
+                    cameraMatrix/resize,
                     distCoeffs,
                     None,
                     None,
@@ -521,7 +533,12 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                     }
                     count += 1
                     img = aruco.drawAxis(
-                        img, cameraMatrix, distCoeffs, Uprvec, Uptvec, 0.1
+                        img, 
+                        cameraMatrix, 
+                        distCoeffs, 
+                        Uprvec, 
+                        Uptvec, 
+                        0.05
                     )
                     img = aruco.drawAxis(
                         img,
@@ -529,8 +546,10 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                         distCoeffs,
                         Lowrvec,
                         Lowtvec,
-                        0.1,
+                        0.05,
                     )
+
+                                       
 
                     currentFrame = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
                     currentFramestr = str(currentFrame)
@@ -568,7 +587,15 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                         cv2.LINE_AA,
                     )
 
+                    if resize == 2:
+                        img = cv2.pyrDown(img)
+                        img = cv2.aruco.drawDetectedMarkers(img, corners, ids, (0,255,0))
+                    
+                    else:
+                        img = cv2.aruco.drawDetectedMarkers(img, corners, ids, (0,255,0))    
+
                     cv2.imshow("img", img)
+                    #cv2.imshow("imgBlur", imgBlur)
 
                     if currentFrame == total:
                         cv2.destroyAllWindows()
@@ -928,8 +955,7 @@ class BDJawTracker_OT_DrawPath(bpy.types.Operator):
         start = time.perf_counter()
         active_object = bpy.context.selected_objects
         bpy.ops.object.paths_calculate(start_frame=scene.frame_start, end_frame=scene.frame_end)
-        
-        
+                
         return {"FINISHED"}
 
 #######################################################################################
