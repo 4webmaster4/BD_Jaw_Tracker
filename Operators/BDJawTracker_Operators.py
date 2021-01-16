@@ -340,7 +340,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
 
         ##############################################################################################
         # Upper board corners
-        Board_corners_upper = [
+        board_corners_lower = [
             np.array(
                 [
                     [-0.026058, 0.018993, 0.001106],
@@ -372,7 +372,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         #############################################################################################
         # Lower board corners
 
-        board_corners_lower = [
+        Board_corners_upper = [
             np.array(
                 [
                     [-0.026058, -0.002007, 0.001106],
