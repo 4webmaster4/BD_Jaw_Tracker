@@ -405,9 +405,9 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         #############################################################################################
 
         # Initiate 2 Bords LowBord and UpBoard
-        LowBoard_ids = np.array([[0], [1], [2]], dtype=np.int32)
+        LowBoard_ids = np.array([[3], [4], [5]], dtype=np.int32)
         LowBoard = aruco.Board_create(board_corners_lower, ARUCO_DICT, LowBoard_ids)
-        UpBoard_ids = np.array([[3], [4], [5]], dtype=np.int32)
+        UpBoard_ids = np.array([[0], [1], [2]], dtype=np.int32)
         UpBoard = aruco.Board_create(Board_corners_upper, ARUCO_DICT, UpBoard_ids)
 
         ##############################################################################################
