@@ -340,7 +340,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
 
         ##############################################################################################
         # Upper board corners
-        board_corners_lower = [
+        Board_corners_upper = [
             np.array(
                 [
                     [-0.026058, 0.018993, 0.001106],
@@ -372,7 +372,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         #############################################################################################
         # Lower board corners
 
-        Board_corners_upper = [
+        board_corners_lower = [
             np.array(
                 [
                     [-0.026058, -0.002007, 0.001106],
@@ -489,14 +489,14 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                     MarkersIdCornersDict[ids[i][0]] = (list(corners))[i]
 
                 LowCorners = [
-                    MarkersIdCornersDict[0],
-                    MarkersIdCornersDict[1],
-                    MarkersIdCornersDict[2],
-                ]
-                UpCorners = [
                     MarkersIdCornersDict[3],
                     MarkersIdCornersDict[4],
                     MarkersIdCornersDict[5],
+                ]
+                UpCorners = [
+                    MarkersIdCornersDict[0],
+                    MarkersIdCornersDict[1],
+                    MarkersIdCornersDict[2],
                 ]
 
                 # Estimate the posture of the board, which is a construction of 3D space based on the 2D video
