@@ -1,4 +1,17 @@
-import bpy, os
+import bpy, os, sys
+from os.path import join, dirname, exists, abspath
+
+##########################################
+if sys.platform == "win32":
+    SS = "\\"
+if sys.platform in ["darwin", "linux"]:
+    SS = "/"
+ADDON_DIR = dirname(abspath(__file__))
+Addon_Version_Path = join(ADDON_DIR, f"Resources{SS}Addon_Version.txt")
+with open(Addon_Version_Path, "r") as rf:
+    lines = rf.readlines()
+    Addon_Version_Date = lines[0].split(";")[0]
+    # print(lines[0].split(";"))
 
 # Selected icons :
 red_icon = "COLORSET_01_VEC"
@@ -25,8 +38,10 @@ class BDJAWTRACKER_PT_MainPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        col = box.column()
-        col.label(text="VERSION : 2021.01.05")
+        row = box.row()
+        row.alert = True
+        row.alignment = "CENTER"
+        row.label(text=f"VERSION : {Addon_Version_Date}")
 
 
 class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
@@ -45,7 +60,7 @@ class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
         yellow_point = "KEYTYPE_KEYFRAME_VEC"
         red_icon = "COLORSET_01_VEC"
         green_icon = "COLORSET_03_VEC"
-        CalibFile = os.path.join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
+        CalibFile = join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
 
         # Draw Addon UI :
@@ -60,9 +75,9 @@ class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
         col.prop(BDJawTracker_Props, "UserProjectDir", text="")
 
         ProjDir = BDJawTracker_Props.UserProjectDir
-        if os.path.exists(ProjDir):
+        if exists(ProjDir):
 
-            if not os.path.exists(CalibFile):
+            if not exists(CalibFile):
                 row = layout.row()
                 split = row.split()
                 col = split.column()
@@ -124,7 +139,7 @@ class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
         yellow_point = "KEYTYPE_KEYFRAME_VEC"
         red_icon = "COLORSET_01_VEC"
         green_icon = "COLORSET_03_VEC"
-        CalibFile = os.path.join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
+        CalibFile = join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
 
         layout = self.layout
@@ -159,71 +174,71 @@ class BDJAWTRACKER_PT_AlignPanel(bpy.types.Panel):
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
-        BDJawTracker_Props = context.scene.BDJawTrackerProps
-        AlignModalState = BDJawTracker_Props.AlignModalState
+
+        BDJawTracker_ALIGN_Props = context.scene.BDJawTracker_ALIGN_Props
+        AlignModalState = BDJawTracker_ALIGN_Props.AlignModalState
+
         layout = self.layout
-        row = layout.row()
-        row.operator("bdjawtracker.alignpoints")
-        row.operator("bdjawtracker.alignpointsinfo", text="", icon="INFO")
-        if not bpy.context.selected_objects:
-            self.AlignLabels = "NOTREADY"
-            BaseObjectLabel = " NO Base object !"
-            BaseObjectIcon = red_icon
-            AlignObjectLabel = " NO Align object !"
-            AlignObjectIcon = red_icon
+        split = layout.split(factor=2 / 3, align=False)
+        col = split.column()
+        row = col.row()
+        row.operator("bdjawtracker_align.alignpoints", text="ALIGN")
+        col = split.column()
+        row = col.row()
+        row.alert = True
+        row.operator("bdjawtracker_align.alignpointsinfo", text="INFO", icon="INFO")
 
-        if len(bpy.context.selected_objects) == 1:
-            self.AlignLabels = "NOTREADY"
-            BaseObject = bpy.context.selected_objects[0]
-            BaseObjectLabel = f" {BaseObject.name}"
-            BaseObjectIcon = green_icon
-            AlignObjectLabel = " NO Align object ! "
-            AlignObjectIcon = red_icon
-
-        if len(bpy.context.selected_objects) == 2:
-            self.AlignLabels = "GOOD"
-            BaseObject = bpy.context.active_object
-            AlignObject = [
-                obj
-                for obj in bpy.context.selected_objects
-                if not obj is bpy.context.active_object
-            ][0]
-            BaseObjectLabel = f" {BaseObject.name}"
-            BaseObjectIcon = green_icon
-            AlignObjectLabel = f" {AlignObject.name}"
-            AlignObjectIcon = orange_icon
-
-        Condition_1 = len(bpy.context.selected_objects) > 2
+        Condition_1 = len(bpy.context.selected_objects) != 2
         Condition_2 = bpy.context.selected_objects and not bpy.context.active_object
         Condition_3 = bpy.context.selected_objects and not (
             bpy.context.active_object in bpy.context.selected_objects
         )
+        Condition_4 = not bpy.context.active_object in bpy.context.visible_objects
 
-        if Condition_1 or Condition_2 or Condition_3:
-            self.AlignLabels = "INVALID"
+        Conditions = Condition_1 or Condition_2 or Condition_3 or Condition_4
         if AlignModalState:
             self.AlignLabels = "MODAL"
+        else:
+            if Conditions:
+                self.AlignLabels = "INVALID"
 
-        if self.AlignLabels in ("GOOD", "NOTREADY"):
+            else:
+                self.AlignLabels = "READY"
+
+        #########################################
+
+        if self.AlignLabels == "READY":
+            TargetObjectName = context.active_object.name
+            SourceObjectName = [
+                obj
+                for obj in bpy.context.selected_objects
+                if not obj is bpy.context.active_object
+            ][0].name
 
             box = layout.box()
 
             row = box.row()
-            row.label(text=f"BASE object :{BaseObjectLabel}", icon=BaseObjectIcon)
-            row = box.row()
-            row.label(text=f"ALIGN object :{AlignObjectLabel}", icon=AlignObjectIcon)
+            row.alert = True
+            row.alignment = "CENTER"
+            row.label(text="READY FOR ALIGNEMENT.")
 
-        if self.AlignLabels == "INVALID":
-            box = layout.box()
-            box.alert = True
             row = box.row()
-            row.label(text="Invalid selection !", icon="ERROR")
+            row.alignment = "CENTER"
+            row.label(text=f"{SourceObjectName} will be aligned to, {TargetObjectName}")
+
+        if self.AlignLabels == "INVALID" or self.AlignLabels == "NOTREADY":
+            box = layout.box()
+            row = box.row(align=True)
+            row.alert = True
+            row.alignment = "CENTER"
+            row.label(text="STANDBY MODE", icon="ERROR")
 
         if self.AlignLabels == "MODAL":
             box = layout.box()
-            box.alert = True
             row = box.row()
-            row.label(text="WAITING FOR ALIGNEMENT.")
+            row.alert = True
+            row.alignment = "CENTER"
+            row.label(text="WAITING FOR ALIGNEMENT...")
 
 
 #################################################################################################

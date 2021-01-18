@@ -1,23 +1,77 @@
 import os, sys, time, bpy
+from os.path import join, dirname, exists, abspath, split
 from mathutils import Vector, Matrix
 
-import cv2
 import numpy as np
-import cv2.aruco as aruco
 import pickle
 import glob
 import threading
 
 # Addon Imports :
+from .BDJawTracker_ALIGN_Utils import *
 
 # Global variables :
+if sys.platform == "win32":
+    SS = "\\"
+    try:
+        from ..Resources.Requirements import cv2
+    except ImportError:
+        try:
+            import cv2
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
+    try:
+        from ..Resources.Requirements.cv2 import aruco
+    except ImportError:
+        try:
+            import cv2.aruco as aruco
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
+if sys.platform == "darwin":
+    SS = "/"
+    try:
+        import cv2
+    except ImportError:
+        try:
+            from ..Resources.Requirements import cv2
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
+    try:
+        import cv2.aruco as aruco
+    except ImportError:
+        try:
+            from ..Resources.Requirements.cv2 import aruco
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
 
-# Popup message box function :
-def ShowMessageBox(message="", title="INFO", icon="INFO"):
-    def draw(self, context):
-        self.layout.label(text=message)
-
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+if sys.platform == "linux":
+    SS = "/"
+    try:
+        import cv2
+    except ImportError:
+        try:
+            from ..Resources.Requirements import cv2
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
+    try:
+        import cv2.aruco as aruco
+    except ImportError:
+        try:
+            from ..Resources.Requirements.cv2 import aruco
+        except ImportError:
+            print(
+                "Could not import Requirements, please contact Addon Develloper for support!"
+            )
 
 
 #######################################################################################
@@ -37,23 +91,18 @@ class BDJawTracker_OT_AddBoards(bpy.types.Operator):
         BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
         start = time.perf_counter()
 
-        # set scene grid scale
-        for area in bpy.context.screen.areas:
-            if area.type == 'VIEW_3D':
-                area.spaces.active.overlay.grid_scale = 0.001
-        
         # set scene units
         Units = bpy.context.scene.unit_settings
         Units.system = "METRIC"
         Units.scale_length = 0.001
         Units.length_unit = "MILLIMETERS"
 
-        addon_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        file_path = os.path.join(addon_dir, "Resources\\boards.blend")
+        addon_dir = dirname(dirname(abspath(__file__)))
+        file_path = join(addon_dir, f"Resources{SS}boards.blend")
 
-        filepathUp = os.path.join(file_path, "UpMarker")
-        filepathLow = os.path.join(file_path, "UpMarker")
-        directory = os.path.join(file_path, "Object")
+        filepathUp = join(file_path, "UpMarker")
+        filepathLow = join(file_path, "UpMarker")
+        directory = join(file_path, "Object")
         filenameUp = "UpMarker"
         filenameLow = "LowMarker"
 
@@ -145,7 +194,7 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
         # All images used should be the same size, which if taken with the same camera shouldn't be a problem
         # images = BDJawTracker_Props.UserProjectDir
         # images = glob.glob(BDJawTrackerProps.UserProjectDir+'*.*')
-        images = glob.glob(os.path.join(BDJawTrackerProps.CalibImages, "*"))
+        images = glob.glob(join(BDJawTrackerProps.CalibImages, "*"))
         # Loop through images glob'ed
         if images:
 
@@ -209,15 +258,15 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
                             # Pause to display each image, waiting for key press
                             cv2.imshow("Charuco board", img)
                             cv2.waitKey(1000)
-                            print(f"read {os.path.split(iname)[1]} ")
+                            print(f"read {split(iname)[1]} ")
                         else:
                             print(
                                 "Not able to detect a charuco board in image: {}".format(
-                                    os.path.split(iname)[1]
+                                    split(iname)[1]
                                 )
                             )
                 except Exception:
-                    print(f"Can't read {os.path.split(iname)[1]}")
+                    print(f"Can't read {split(iname)[1]}")
                     pass
             # Destroy any open CV windows
             cv2.destroyAllWindows()
@@ -229,7 +278,7 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
                 "No valid Calibration images found,",
                 "Retry with differents Calibration Images.",
             ]
-            ShowMessageBox(message=message, title="INFO", icon="COLORSET_01_VEC")
+            ShowMessageBox2(message=message, title="INFO", icon="COLORSET_01_VEC")
             print(message)
 
             # Calibration failed because there were no images, warn the user
@@ -247,7 +296,7 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
                 "Calibration was unsuccessful!",
                 "Retry with differents Calibration Images.",
             ]
-            ShowMessageBox(message=message, title="INFO", icon="COLORSET_01_VEC")
+            ShowMessageBox2(message=message, title="INFO", icon="COLORSET_01_VEC")
             # Calibration failed because we didn't see any charucoboards of the PatternSize used
             print(message)
             # Exit for failure
@@ -282,8 +331,12 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
         pickle.dump((cameraMatrix, distCoeffs, rvecs, tvecs), f)
         f.close()
 
-        message = ("Calibration was unsuccessful!",)
-        ShowMessageBox(message=message, title="INFO", icon="COLORSET_03_VEC")
+        message = [
+            "Calibration was successful!",
+            "Calibration file used:",
+            join(BDJawTrackerProps.UserProjectDir, "calibration.pckl"),
+        ]
+        ShowMessageBox2(message=message, title="INFO", icon="COLORSET_03_VEC")
 
         # Print to console our success
         print(
@@ -336,7 +389,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
             resize=2
 
-        CalibFile = os.path.join(BDJawTrackerProps.UserProjectDir, "calibration.pckl")
+        CalibFile = join(BDJawTrackerProps.UserProjectDir, "calibration.pckl")
 
         ##############################################################################################
         # Upper board corners
@@ -411,21 +464,27 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         UpBoard = aruco.Board_create(Board_corners_upper, ARUCO_DICT, UpBoard_ids)
 
         ##############################################################################################
-        if not os.path.exists(BDJawTrackerProps.TrackFile):
-            message = " Invalid Track file check and retry."
-            ShowMessageBox(message=message, icon="COLORSET_01_VEC")
+        if not exists(BDJawTrackerProps.TrackFile):
+            message = [" Invalid Track file check and retry."]
+            ShowMessageBox2(message=message, icon="COLORSET_01_VEC")
             return {"CANCELLED"}
 
-        if not os.path.exists(CalibFile):
-            message = "calibration.pckl not found in project directory check and retry."
-            ShowMessageBox(message=message, icon="COLORSET_01_VEC")
+        if not exists(CalibFile):
+            message = [
+                "calibration.pckl not found in project directory check and retry."
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_01_VEC")
             return {"CANCELLED"}
 
         with open(CalibFile, "rb") as rf:
             (cameraMatrix, distCoeffs, _, _) = pickle.load(rf)
             if cameraMatrix is None or distCoeffs is None:
-                message = " Invalid Calibration File. Please replace calibration.pckl or recalibrate the camera."
-                ShowMessageBox(message=message, icon="COLORSET_01_VEC")
+                message = [
+                    "Invalid Calibration File.",
+                    "Please replace calibration.pckl",
+                    "or recalibrate the camera.",
+                ]
+                ShowMessageBox2(message=message, icon="COLORSET_01_VEC")
                 return {"CANCELLED"}
 
         cap = cv2.VideoCapture(BDJawTrackerProps.TrackFile)
@@ -466,13 +525,11 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         while True:
             success, img = cap.read()
             imgGrey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            #imgBlur = imgGrey
             imgBlur = cv2.GaussianBlur(imgGrey, (7, 7), cv2.BORDER_DEFAULT)
             if resize == 2:
                 imgBlur = cv2.pyrDown(imgBlur)  # reduce the image by 2 times
 
             cv2.namedWindow("img", cv2.WINDOW_NORMAL)
-            #cv2.namedWindow("imgBlur", cv2.WINDOW_NORMAL)
 
             # lists of ids and the corners beloning to each id
             corners, ids, rejected = aruco.detectMarkers(
@@ -538,7 +595,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                         distCoeffs, 
                         Uprvec, 
                         Uptvec, 
-                        0.05
+                        0.05,
                     )
                     img = aruco.drawAxis(
                         img,
@@ -548,8 +605,6 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                         Lowtvec,
                         0.05,
                     )
-
-                                       
 
                     currentFrame = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
                     currentFramestr = str(currentFrame)
@@ -595,7 +650,6 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                         img = cv2.aruco.drawDetectedMarkers(img, corners, ids, (0,255,0))    
 
                     cv2.imshow("img", img)
-                    #cv2.imshow("imgBlur", imgBlur)
 
                     if currentFrame == total:
                         cv2.destroyAllWindows()
@@ -954,163 +1008,168 @@ class BDJawTracker_OT_DrawPath(bpy.types.Operator):
         JawTrackerProps = bpy.context.scene.BDJawTrackerProps
         start = time.perf_counter()
         active_object = bpy.context.selected_objects
-        bpy.ops.object.paths_calculate(start_frame=scene.frame_start, end_frame=scene.frame_end)
-                
+        bpy.ops.object.paths_calculate(
+            start_frame=scene.frame_start, end_frame=scene.frame_end
+        )
+
         return {"FINISHED"}
 
+
+#######################################################################################
+# ALIGN Operators :
 #######################################################################################
 
-# Popup message box function :
-def ShowMessageBox(message=[], title="INFO", icon="INFO"):
-    def draw(self, context):
-        for txtLine in message:
-            self.layout.label(text=txtLine)
 
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
-
-
-def ShowMessageBox2(message=[], title="INFO", icon="INFO"):
-    def draw(self, context):
-        layout = self.layout
-        box = layout.box()
-        for txtLine in message:
-            row = box.row()
-            row.label(text=txtLine)
-
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
-
-
-def MoveToCollection(obj, CollName):
-
-    OldColl = obj.users_collection  # list of all collection the obj is in
-    NewColl = bpy.data.collections.get(CollName)
-    if not NewColl:
-        NewColl = bpy.data.collections.new(CollName)
-        bpy.context.scene.collection.children.link(NewColl)
-    if not obj in NewColl.objects[:]:
-        NewColl.objects.link(obj)  # link obj to scene
-    if OldColl:
-        for Coll in OldColl:  # unlink from all  precedent obj collections
-            if Coll is not NewColl:
-                Coll.objects.unlink(obj)
-
-
-def AddRefPoint(name, color, CollName=None):
-
-    loc = bpy.context.scene.cursor.location
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=1.2, location=loc)
-    RefP = bpy.context.object
-    RefP.name = name
-    RefP.data.name = name + "_mesh"
-    if CollName:
-        MoveToCollection(RefP, CollName)
-    if name.startswith("B"):
-        matName = "BaseRefMat"
-    if name.startswith("M"):
-        matName = "AlignRefMat"
-
-    mat = bpy.data.materials.get(matName) or bpy.data.materials.new(matName)
-    mat.diffuse_color = color
-    mat.use_nodes = True
-    RefP.active_material = mat
-    RefP.show_name = True
-    return RefP
-
-
-def RefPointsToTransformMatrix(BaseRefPoints, AlignRefPoints):
-    # TransformMatrix = Matrix()  # identity Matrix (4x4)
-
-    # make 2 arrays of coordinates :
-    BaseArray = np.array([obj.location for obj in BaseRefPoints], dtype=np.float64).T
-    AlignArray = np.array([obj.location for obj in AlignRefPoints], dtype=np.float64).T
-
-    # Calculate centers of Base and Align RefPoints :
-    BaseCenter, AlignCenter = np.mean(BaseArray, axis=1), np.mean(AlignArray, axis=1)
-
-    # Calculate Translation :
-    ###################################
-
-    # TransMatrix_1 : Matrix(4x4) will translate center of AlignRefPoints...
-    # to origine (0,0,0) location.
-    TransMatrix_1 = Matrix.Translation(Vector(-AlignCenter))
-
-    # TransMatrix_2 : Matrix(4x4) will translate center of AlignRefPoints...
-    #  to the center of BaseRefPoints location.
-    TransMatrix_2 = Matrix.Translation(Vector(BaseCenter))
-
-    # Calculate Rotation :
-    ###################################
-
-    # Home Arrays will get the Centered Base and Align RefPoints around origin (0,0,0).
-    HomeBaseArray, HomeAlignArray = (
-        BaseArray - BaseCenter.reshape(3, 1),
-        AlignArray - AlignCenter.reshape(3, 1),
-    )
-    # Rigid transformation via SVD of covariance matrix :
-    U, S, Vt = np.linalg.svd(np.dot(HomeBaseArray, HomeAlignArray.T))
-
-    # rotation matrix from SVD orthonormal bases :
-    R = np.dot(U, Vt)
-    if np.linalg.det(R) < 0.0:
-        Vt[2, :] *= -1
-        R = np.dot(U, Vt)
-        print(" Reflection fixed ")
-
-    RotationMatrix = Matrix(R).to_4x4()
-    TransformMatrix = TransMatrix_2 @ RotationMatrix @ TransMatrix_1
-
-    return TransformMatrix
-
-
-class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
+class BDJawTracker_ALIGN_OT_AlignPoints(bpy.types.Operator):
     """ Add Align Refference points """
 
-    bl_idname = "bdjawtracker.alignpoints"
+    bl_idname = "bdjawtracker_align.alignpoints"
     bl_label = "ALIGN POINTS"
     bl_options = {"REGISTER", "UNDO"}
 
-    BaseColor = (1, 0, 0, 1)  # red
-    AlignColor = (0, 0, 1, 1)  # blue
+    TargetColor = (1, 0, 0, 1)  # red
+    SourceColor = (0, 0, 1, 1)  # blue
     CollName = "ALIGN POINTS"
-    BaseChar = "B"
-    AlignChar = "A"
+    TargetChar = "B"
+    SourceChar = "A"
+
+    def IcpPipline(
+        self,
+        context,
+        SourceObj,
+        TargetObj,
+        SourceVidList,
+        TargetVidList,
+        VertsLimite,
+        Iterations,
+        Precision,
+    ):
+
+        MaxDist = 0.0
+        Override, area3D, space3D = CtxOverride(context)
+        for i in range(Iterations):
+
+            SourceVcoList = [
+                SourceObj.matrix_world @ SourceObj.data.vertices[idx].co
+                for idx in SourceVidList
+            ]
+            TargetVcoList = [
+                TargetObj.matrix_world @ TargetObj.data.vertices[idx].co
+                for idx in TargetVidList
+            ]
+
+            (
+                SourceKdList,
+                TargetKdList,
+                DistList,
+                SourceIndexList,
+                TargetIndexList,
+            ) = KdIcpPairs(SourceVcoList, TargetVcoList, VertsLimite=VertsLimite)
+
+            TransformMatrix = KdIcpPairsToTransformMatrix(
+                TargetKdList=TargetKdList, SourceKdList=SourceKdList
+            )
+            SourceObj.matrix_world = TransformMatrix @ SourceObj.matrix_world
+            # Update scene :
+            SourceObj.update_tag()
+            context.view_layer.update()
+
+            ##################################################################
+            bpy.ops.wm.redraw_timer(Override, type="DRAW_SWAP", iterations=1)
+            ##################################################################
+
+            SourceObj = self.SourceObject
+
+            SourceVcoList = [
+                SourceObj.matrix_world @ SourceObj.data.vertices[idx].co
+                for idx in SourceVidList
+            ]
+            _, _, DistList, _, _ = KdIcpPairs(
+                SourceVcoList, TargetVcoList, VertsLimite=VertsLimite
+            )
+            MaxDist = max(DistList)
+            if MaxDist <= Precision:
+                self.ResultMessage = [
+                    "Allignement Done !",
+                    f"Max Distance < or = {Precision} mm",
+                ]
+                print(f"Number of iterations = {i}")
+                print(f"Precision of {Precision} mm reached.")
+                print(f"Max Distance = {round(MaxDist, 6)} mm")
+                break
+
+        if MaxDist > Precision:
+            print(f"Number of iterations = {i}")
+            print(f"Max Distance = {round(MaxDist, 6)} mm")
+            self.ResultMessage = [
+                "Allignement Done !",
+                f"Max Distance = {round(MaxDist, 6)} mm",
+            ]
 
     def modal(self, context, event):
 
         ############################################
-        if not event.type in {
-            self.BaseChar,
-            self.AlignChar,
-            "DEL",
-            "RET",
-            "ESC",
-        }:
-            # allow navigation
+        # if not event.type in {
+        #     self.TargetChar,
+        #     self.SourceChar,
+        #     "DEL",
+        #     "RET",
+        #     "ESC",
+        #     "LEFT_CTRL" + "Z",
+        #     "RIGHT_CTRL" + "Z",
+        # }:
+        #     # allow navigation
+
+        #     return {"PASS_THROUGH"}
+        ############################################
+
+        # allow navigation
+        if (
+            event.type
+            in [
+                "LEFTMOUSE",
+                "RIGHTMOUSE",
+                "MIDDLEMOUSE",
+                "WHEELUPMOUSE",
+                "WHEELDOWNMOUSE",
+                "N",
+                "NUMPAD_2",
+                "NUMPAD_4",
+                "NUMPAD_6",
+                "NUMPAD_8",
+                "NUMPAD_1",
+                "NUMPAD_3",
+                "NUMPAD_5",
+                "NUMPAD_7",
+                "NUMPAD_9",
+            ]
+            and event.value == "PRESS"
+        ):
 
             return {"PASS_THROUGH"}
         #########################################
-        if event.type == self.BaseChar:
-            # Add Base Refference point :
+        if event.type == self.TargetChar:
+            # Add Target Refference point :
             if event.value == ("PRESS"):
-                color = self.BaseColor
+                color = self.TargetColor
                 CollName = self.CollName
-                self.BaseCounter += 1
-                name = f"B{self.BaseCounter}"
+                self.TargetCounter += 1
+                name = f"B{self.TargetCounter}"
                 RefP = AddRefPoint(name, color, CollName)
-                self.BaseRefPoints.append(RefP)
+                self.TargetRefPoints.append(RefP)
                 self.TotalRefPoints.append(RefP)
                 bpy.ops.object.select_all(action="DESELECT")
 
         #########################################
-        if event.type == self.AlignChar:
-            # Add Base Refference point :
+        if event.type == self.SourceChar:
+            # Add Source Refference point :
             if event.value == ("PRESS"):
-                color = self.AlignColor
+                color = self.SourceColor
                 CollName = self.CollName
-                self.AlignCounter += 1
-                name = f"M{self.AlignCounter}"
+                self.SourceCounter += 1
+                name = f"M{self.SourceCounter}"
                 RefP = AddRefPoint(name, color, CollName)
-                self.AlignRefPoints.append(RefP)
+                self.SourceRefPoints.append(RefP)
                 self.TotalRefPoints.append(RefP)
                 bpy.ops.object.select_all(action="DESELECT")
 
@@ -1121,11 +1180,11 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                     obj = self.TotalRefPoints.pop()
                     name = obj.name
                     if name.startswith("B"):
-                        self.BaseCounter -= 1
-                        self.BaseRefPoints.pop()
+                        self.TargetCounter -= 1
+                        self.TargetRefPoints.pop()
                     if name.startswith("M"):
-                        self.AlignCounter -= 1
-                        self.AlignRefPoints.pop()
+                        self.SourceCounter -= 1
+                        self.SourceRefPoints.pop()
                     bpy.data.objects.remove(obj)
                     bpy.ops.object.select_all(action="DESELECT")
 
@@ -1134,10 +1193,20 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
 
             if event.value == ("PRESS"):
 
+                start = Tcounter()
+
+                TargetObj = self.TargetObject
+                SourceObj = self.SourceObject
+
+                for obj in self.TargetRefPoints:
+                    obj.hide_set(True)
+                for obj in self.SourceRefPoints:
+                    obj.hide_set(True)
+
                 #############################################
                 condition = (
-                    len(self.BaseRefPoints) == len(self.AlignRefPoints)
-                    and len(self.BaseRefPoints) >= 3
+                    len(self.TargetRefPoints) == len(self.SourceRefPoints)
+                    and len(self.TargetRefPoints) >= 3
                 )
                 if not condition:
                     message = [
@@ -1149,39 +1218,100 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                         "       should be superior or equal to 3",
                         "        <<Please check and retry !>>",
                     ]
-                    ShowMessageBox(message=message, icon="COLORSET_02_VEC")
+                    ShowMessageBox2(message=message, icon="COLORSET_02_VEC")
+
                 else:
+
                     TransformMatrix = RefPointsToTransformMatrix(
-                        self.BaseRefPoints, self.AlignRefPoints
+                        self.TargetRefPoints, self.SourceRefPoints
                     )
 
-                    self.AlignObject.matrix_world = (
-                        TransformMatrix @ self.AlignObject.matrix_world
+                    SourceObj.matrix_world = TransformMatrix @ SourceObj.matrix_world
+                    for SourceRefP in self.SourceRefPoints:
+                        SourceRefP.matrix_world = (
+                            TransformMatrix @ SourceRefP.matrix_world
+                        )
+
+                    # Update scene :
+                    context.view_layer.update()
+                    SourceObj.update_tag()
+                    Override, area3D, space3D = CtxOverride(context)
+                    ##################################################################
+                    bpy.ops.wm.redraw_timer(Override, type="DRAW_SWAP", iterations=1)
+                    ##################################################################
+
+                    # ICP alignement :
+                    print("ICP Align processing...")
+                    IcpVidDict = VidDictFromPoints(
+                        TargetRefPoints=self.TargetRefPoints,
+                        SourceRefPoints=self.SourceRefPoints,
+                        TargetObj=TargetObj,
+                        SourceObj=SourceObj,
+                        radius=3,
                     )
+                    BDJawTracker_ALIGN_Props = (
+                        bpy.context.scene.BDJawTracker_ALIGN_Props
+                    )
+                    BDJawTracker_ALIGN_Props.IcpVidDict = str(IcpVidDict)
+
+                    SourceVidList, TargetVidList = (
+                        IcpVidDict[SourceObj],
+                        IcpVidDict[TargetObj],
+                    )
+
+                    self.IcpPipline(
+                        context,
+                        SourceObj=SourceObj,
+                        TargetObj=TargetObj,
+                        SourceVidList=SourceVidList,
+                        TargetVidList=TargetVidList,
+                        VertsLimite=10000,
+                        Iterations=20,
+                        Precision=0.0001,
+                    )
+
                     for obj in self.TotalRefPoints:
                         bpy.data.objects.remove(obj)
+                    PointsColl = bpy.data.collections["ALIGN POINTS"]
+                    bpy.data.collections.remove(PointsColl)
 
+                    Override, area3D, space3D = CtxOverride(context)
                     ##########################################################
-                    bpy.context.space_data.overlay.show_outline_selected = True
-                    bpy.context.space_data.overlay.show_object_origins = True
-                    bpy.context.space_data.overlay.show_annotation = True
-                    bpy.context.space_data.overlay.show_text = True
-                    bpy.context.space_data.overlay.show_extras = True
-                    bpy.context.space_data.overlay.show_floor = True
-                    bpy.context.space_data.overlay.show_axis_x = True
-                    bpy.context.space_data.overlay.show_axis_y = True
+                    space3D.overlay.show_outline_selected = True
+                    space3D.overlay.show_object_origins = True
+                    space3D.overlay.show_annotation = True
+                    space3D.overlay.show_text = True
+                    space3D.overlay.show_extras = True
+                    space3D.overlay.show_floor = True
+                    space3D.overlay.show_axis_x = True
+                    space3D.overlay.show_axis_y = True
                     ###########################################################
 
-                    bpy.ops.object.hide_view_clear()
-                    bpy.ops.object.select_all(action="DESELECT")
-                    bpy.ops.wm.tool_set_by_id(name="builtin.select")
+                    bpy.ops.object.hide_view_clear(Override)
+                    bpy.ops.object.select_all(Override, action="DESELECT")
+                    for obj in self.visibleObjects:
+                        obj.select_set(True)
+                        bpy.context.view_layer.objects.active = obj
+                    bpy.ops.object.hide_view_set(Override, unselected=True)
+                    bpy.ops.object.select_all(Override, action="DESELECT")
                     bpy.context.scene.tool_settings.use_snap = False
-                    bpy.context.space_data.shading.background_color = (
-                        self.background_color
-                    )
-                    bpy.context.space_data.shading.background_type = (
-                        self.background_type
-                    )
+                    space3D.shading.background_color = self.background_color
+                    space3D.shading.background_type = self.background_type
+                    BDJawTracker_ALIGN_Props = context.scene.BDJawTracker_ALIGN_Props
+                    BDJawTracker_ALIGN_Props.AlignModalState = False
+                    bpy.context.scene.cursor.location = (0, 0, 0)
+                    bpy.ops.screen.region_toggle(Override, region_type="UI")
+                    bpy.ops.wm.tool_set_by_id(Override, name="builtin.select_box")
+                    bpy.ops.screen.screen_full_area(Override)
+                    
+
+                    ShowMessageBox2(message=self.ResultMessage, icon="COLORSET_03_VEC")
+                    ##########################################################
+
+                    finish = Tcounter()
+                    print(f"Alignement finshed in {finish-start} secondes")
+
+                    
 
                     return {"FINISHED"}
 
@@ -1193,29 +1323,44 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                 for RefP in self.TotalRefPoints:
                     bpy.data.objects.remove(RefP)
 
+                PointsColl = bpy.data.collections["ALIGN POINTS"]
+                bpy.data.collections.remove(PointsColl)
+
+                Override, area3D, space3D = CtxOverride(context)
                 ##########################################################
-                bpy.context.space_data.overlay.show_outline_selected = True
-                bpy.context.space_data.overlay.show_object_origins = True
-                bpy.context.space_data.overlay.show_annotation = True
-                bpy.context.space_data.overlay.show_text = True
-                bpy.context.space_data.overlay.show_extras = True
-                bpy.context.space_data.overlay.show_floor = True
-                bpy.context.space_data.overlay.show_axis_x = True
-                bpy.context.space_data.overlay.show_axis_y = True
+                space3D.overlay.show_outline_selected = True
+                space3D.overlay.show_object_origins = True
+                space3D.overlay.show_annotation = True
+                space3D.overlay.show_text = True
+                space3D.overlay.show_extras = True
+                space3D.overlay.show_floor = True
+                space3D.overlay.show_axis_x = True
+                space3D.overlay.show_axis_y = True
                 ###########################################################
 
-                bpy.ops.object.hide_view_clear()
-                bpy.ops.wm.tool_set_by_id(name="builtin.select")
+                bpy.ops.object.hide_view_clear(Override)
+                bpy.ops.object.select_all(Override, action="DESELECT")
+                for obj in self.visibleObjects:
+                    obj.select_set(True)
+                    bpy.context.view_layer.objects.active = obj
+                bpy.ops.object.hide_view_set(Override, unselected=True)
+                bpy.ops.object.select_all(Override, action="DESELECT")
+                bpy.ops.wm.tool_set_by_id(Override, name="builtin.select")
                 bpy.context.scene.tool_settings.use_snap = False
-                bpy.ops.object.select_all(action="DESELECT")
-                bpy.context.space_data.shading.background_color = self.background_color
-                bpy.context.space_data.shading.background_type = self.background_type
+                space3D.shading.background_color = self.background_color
+                space3D.shading.background_type = self.background_type
+                BDJawTracker_ALIGN_Props = context.scene.BDJawTracker_ALIGN_Props
+                BDJawTracker_ALIGN_Props.AlignModalState = False
+                bpy.context.scene.cursor.location = (0, 0, 0)
+                bpy.ops.screen.region_toggle(Override, region_type="UI")
+                bpy.ops.screen.screen_full_area(Override)
 
                 message = [
                     " The Align Operation was Cancelled!",
                 ]
 
-                ShowMessageBox(message=message, icon="COLORSET_03_VEC")
+                ShowMessageBox2(message=message, icon="COLORSET_03_VEC")
+
                 return {"CANCELLED"}
 
         return {"RUNNING_MODAL"}
@@ -1230,38 +1375,24 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
         if Condition_1 or Condition_2 or Condition_3:
 
             message = [
-                "       Selection is invalid !",
-                "     Please Deselect all objects,",
-                "    Select the Object to Align and ,",
-                "   <SHIFT + Select> the Base Object.",
+                "Selection is invalid !",
+                "Please Deselect all objects,",
+                "Select the Object to Align and ,",
+                "<SHIFT + Select> the Base Object.",
+                "Click info button for more info.",
             ]
-            ShowMessageBox(message=message, icon="COLORSET_02_VEC")
+            ShowMessageBox2(message=message, icon="COLORSET_02_VEC")
 
             return {"CANCELLED"}
 
         else:
 
             if context.space_data.type == "VIEW_3D":
-
+                BDJawTracker_ALIGN_Props = context.scene.BDJawTracker_ALIGN_Props
+                BDJawTracker_ALIGN_Props.AlignModalState = True
                 # Prepare scene  :
-
-                self.BaseObject = bpy.context.active_object
-                self.AlignObject = [
-                    obj
-                    for obj in bpy.context.selected_objects
-                    if not obj is self.BaseObject
-                ][0]
-
-                self.BaseRefPoints = []
-                self.AlignRefPoints = []
-                self.TotalRefPoints = []
-
-                self.BaseCounter = 0
-                self.AlignCounter = 0
-                self.background_type = bpy.context.space_data.shading.background_type
-                self.background_color = bpy.context.space_data.shading.background_color
-
                 ##########################################################
+
                 bpy.context.space_data.overlay.show_outline_selected = False
                 bpy.context.space_data.overlay.show_object_origins = False
                 bpy.context.space_data.overlay.show_annotation = False
@@ -1270,7 +1401,6 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                 bpy.context.space_data.overlay.show_floor = False
                 bpy.context.space_data.overlay.show_axis_x = False
                 bpy.context.space_data.overlay.show_axis_y = False
-                ###########################################################
                 bpy.context.scene.tool_settings.use_snap = True
                 bpy.context.scene.tool_settings.snap_elements = {"FACE"}
                 bpy.context.scene.tool_settings.transform_pivot_point = (
@@ -1278,12 +1408,35 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                 )
                 bpy.ops.wm.tool_set_by_id(name="builtin.cursor")
                 bpy.ops.object.hide_view_set(unselected=True)
+
+                ###########################################################
+                self.TargetObject = bpy.context.active_object
+                self.SourceObject = [
+                    obj
+                    for obj in bpy.context.selected_objects
+                    if not obj is self.TargetObject
+                ][0]
+
+                self.TargetRefPoints = []
+                self.SourceRefPoints = []
+                self.TotalRefPoints = []
+
+                self.TargetCounter = 0
+                self.SourceCounter = 0
+                self.visibleObjects = bpy.context.visible_objects.copy()
+                self.background_type = bpy.context.space_data.shading.background_type
                 bpy.context.space_data.shading.background_type = "VIEWPORT"
-                bpy.context.space_data.shading.background_color = (0, 0, 0)
+                self.background_color = tuple(
+                    bpy.context.space_data.shading.background_color
+                )
+                bpy.context.space_data.shading.background_color = (0.0, 0.0, 0.0)
 
-                # bpy.ops.object.select_all(action="DESELECT")
+                bpy.ops.screen.screen_full_area()
+                Override, area3D, space3D = CtxOverride(context)
+                bpy.ops.screen.region_toggle(Override, region_type="UI")
+                bpy.ops.object.select_all(Override, action="DESELECT")
                 context.window_manager.modal_handler_add(self)
-
+                
                 return {"RUNNING_MODAL"}
 
             else:
@@ -1293,32 +1446,37 @@ class BDJawTracker_OT_AlignPoints(bpy.types.Operator):
                 return {"CANCELLED"}
 
 
-class BDJawTracker_OT_AlignPointsInfo(bpy.types.Operator):
-    """ Align Points info """
+############################################################################
+class BDJawTracker_ALIGN_OT_AlignPointsInfo(bpy.types.Operator):
+    """ Add Align Refference points """
 
-    bl_idname = "bdjawtracker.alignpointsinfo"
+    bl_idname = "bdjawtracker_align.alignpointsinfo"
     bl_label = "INFO"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
 
         message = [
-            "        Deselect all objects,",
-            "      Select the Object to Align,",
-            "    <SHIFT + Select> the Base Object,",
-            "      Click <ALIGN POINTS> button,",
-            "     <Left Click> to Place Cursor,",
-            "   <Press 'B'> to Add red Point (Base),",
-            "  <Press 'A'> to Add blue Point (Align),",
-            "Minimum of 3 red Points, and 3 blue Points,",
-            "      <Press 'DEL'> to delete Point,",
-            "    <Press 'ESC'> to Cancel Operation,",
-            "  <Press 'ENTER'> to execute Alignement.",
+            "\u2588 Deselect all objects,",
+            "\u2588 Select the Object to Align,",
+            "\u2588 Press <SHIFT + Click> to select the Base Object,",
+            "\u2588 Click <ALIGN> button,",
+            f"      Press <Left Click> to Place Cursor,",
+            f"      Press <'B'> to Add red Point (Base),",
+            f"      Press <'A'> to Add blue Point (Align),",
+            f"      Press <'DEL'> to delete Point,",
+            f"      Press <'ESC'> to Cancel Operation,",
+            f"      Press <'ENTER'> to execute Alignement.",
+            "\u2588 NOTE :",
+            "3 Red Points and 3 Blue Points,",
+            "are the minimum required for Alignement!",
         ]
         ShowMessageBox2(message=message, title="INFO", icon="INFO")
 
         return {"FINISHED"}
 
+
+#############################################################################
 
 #################################################################################################
 # Registration :
@@ -1330,9 +1488,9 @@ classes = [
     BDJawTracker_OT_StarTrack,
     BDJawTracker_OT_DataReader,
     BDJawTracker_OT_SmoothKeyframes,
-    BDJawTracker_OT_AlignPoints,
-    BDJawTracker_OT_AlignPointsInfo,
     BDJawTracker_OT_DrawPath,
+    BDJawTracker_ALIGN_OT_AlignPoints,
+    BDJawTracker_ALIGN_OT_AlignPointsInfo,
 ]
 
 

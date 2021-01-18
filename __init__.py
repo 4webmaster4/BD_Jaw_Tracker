@@ -37,190 +37,192 @@ bl_info = {
 # IMPORTS :
 #############################################################################################
 # Python imports :
-import sys, os, bpy, subprocess, socket, time, addon_utils, platform
+import sys, os, bpy, subprocess, socket, time, addon_utils, zipfile
 from importlib import import_module
+from os.path import dirname, join, realpath, abspath, exists
 
+if sys.platform == "win32":
+    SS = "\\"
+if sys.platform in ["darwin", "linux"]:
+    SS = "/"
+ADDON_DIR = dirname(abspath(__file__))
 # activate unicode characters in windows CLI :
-if platform.system() == "Windows":
-    sys.stdout.reconfigure(encoding="cp65001")  # set PYTHONIOENCODING=utf-8"
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="cp65001")
+
+REQ_DIR = join(ADDON_DIR, join(f"Resources{SS}Requirements"))
+REQ_ZIP = join(REQ_DIR, "BDJT_Req.zip")
+if exists(REQ_ZIP):
+    with zipfile.ZipFile(REQ_ZIP, "r") as Zip_File:
+        Zip_File.extractall(REQ_DIR)
+    os.remove(REQ_ZIP)
+print("Requirements Unzipped!")
 
 #############################################################
-# Add sys Paths : Addon directory and requirements directory
-addon_dir = os.path.dirname(os.path.abspath(__file__))
-requirements_path = os.path.join(addon_dir, "Resources/Requirements")
 
-sysPaths = [addon_dir, requirements_path]
+sysPaths = [ADDON_DIR, REQ_DIR]
 
 for path in sysPaths:
     if not path in sys.path:
-        sys.path.append(path)
-Requirements = [
-    "opencv-contrib-python==4.4.0.46"
-]  # tested working versions 4.4.0.46 and 4.5.1.48 (update Jan/08/2021)
-CheckList = [
-    "cv2",
-    "cv2.aruco",
+        sys.path.insert(0, path)
+
+# Addon modules imports :
+from . import BDJawTrackerProps, BDJawTrackerPanel
+from .Operators import BDJawTracker_Operators
+
+addon_modules = [
+    BDJawTrackerProps,
+    BDJawTrackerPanel,
+    BDJawTracker_Operators,
 ]
+############################################################################################
+# Registration :
+############################################################################################
+
+# Registration :
+def register():
+
+    for module in addon_modules:
+        module.register()
 
 
-# Popup message box function :
-def ShowMessageBox(message=[], title="INFO", icon="INFO"):
-    def draw(self, context):
-        for txtLine in message:
-            self.layout.label(text=txtLine)
+def unregister():
 
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+    for module in reversed(addon_modules):
+        module.unregister()
 
 
-def isConnected():
-    try:
-        sock = socket.create_connection(("www.google.com", 80))
-        if sock is not None:
-            # print("Clossing socket")
-            sock.close
-        return True
-    except OSError:
-        pass
-        return False
+if __name__ == "__main__":
+    register()
 
 
-###########################################################################
+# Requirements = {
+#     "cv2.aruco": "opencv-contrib-python==4.4.0.46",
+# }
 
 
-def BlenderRequirementsPipInstall(path, modules):
-    # Download and install requirement if not AddonPacked version:
-    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
-    site_packages = os.path.join(Blender_python_path, "lib\\site-packages\\*.*")
-    subprocess.call(
-        f"cd {Blender_python_path} && python -m ensurepip ",
-        shell=True,
-    )
-    subprocess.call(
-        f"cd {Blender_python_path} && python -m pip install -U pip ",
-        shell=True,
-    )
-    print("Blender pip upgraded")
-
-    for module in modules:
-        command = f'cd "{Blender_python_path}" && python -m pip install {module} --target "{path}"'
-        subprocess.call(command, shell=True)
-        print(f"{module}Downloaded and installed")
-
-    ##########################
-    print("requirements installed successfuly.")
+# def isConnected():
+#     try:
+#         sock = socket.create_connection(("www.google.com", 80))
+#         if sock is not None:
+#             # print("Clossing socket")
+#             sock.close
+#         return True
+#     except OSError:
+#         pass
+#         return False
 
 
-def PipInstallModules(modules):
-    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
-    site_packages = os.path.join(sys.base_exec_prefix, "lib\\site-packages")
-    subprocess.call(
-        f"cd {Blender_python_path} && python -m ensurepip ",
-        shell=True,
-    )
-    subprocess.call(
-        f"cd {Blender_python_path} && python -m pip install -U pip ",
-        shell=True,
-    )
-    print("Blender pip upgraded")
-
-    for module in modules:
-        command = f'cd "{Blender_python_path}" && python -m pip install {module} --target "{site_packages}"'
-        subprocess.call(command, shell=True)
-        print(f"{module}Downloaded and installed")
+# ###########################################################################
 
 
-def UninstallPipPackages(module):
-    print("Uninstaling ", module)
-    Blender_python_path = os.path.join(sys.base_exec_prefix, "bin")
-    command = f'cd "{Blender_python_path}" && python -m pip uninstall {module}'
-    subprocess.call(command, shell=True)
-    print(f"{module} Uninstalled")
+# def BlenderRequirementsPipInstall(path, modules):
+#     # Download and install requirement if not AddonPacked version:
+#     if sys.platform == "win32":
+#         Blender_python_path = sys.executable
+#     if sys.platform in ["darwin", "linux"]:
+#         Blender_python_path = join(sys.base_exec_prefix, f"bin{SS}python3.7m")
+#     subprocess.call(
+#         f"{Blender_python_path} -m ensurepip ",
+#         shell=True,
+#     )
+#     subprocess.call(
+#         f"{Blender_python_path} -m pip install -U pip ",
+#         shell=True,
+#     )
+#     print("Blender pip upgraded")
+
+#     for module in modules:
+#         command = f'{Blender_python_path} -m pip install {module} --target "{path}"'
+#         subprocess.call(command, shell=True)
+#         print(f"{module}Downloaded and installed")
+
+#     ##########################
+#     print("requirements installed successfuly.")
 
 
-######################################################################################
-######################################################################################
-#######################################################################################
-NotFoundPkgs = []
-for mod in CheckList:
-    try:
-        import_module(mod)
-    except ImportError:
-        NotFoundPkgs.append(mod)
+# ######################################################################################
+# ######################################################################################
+# #######################################################################################
+# NotFoundPkgs = []
+# for mod, pkg in Requirements.items():
+#     try:
+#         import_module(mod)
+#     except ImportError:
+#         NotFoundPkgs.append(pkg)
 
-if NotFoundPkgs == []:
-    print("Requirement already installed")
+# if NotFoundPkgs == []:
+#     print("Requirement already installed")
 
-    # Addon modules imports :
-    from . import BDJawTrackerProps, BDJawTrackerPanel
-    from .Operators import BDJawTracker_Operators
+#     # Addon modules imports :
+#     from . import BDJawTrackerProps, BDJawTrackerPanel
+#     from .Operators import BDJawTracker_Operators
 
-    addon_modules = [
-        BDJawTrackerProps,
-        BDJawTrackerPanel,
-        BDJawTracker_Operators,
-    ]
-    ############################################################################################
-    # Registration :
-    ############################################################################################
+#     addon_modules = [
+#         BDJawTrackerProps,
+#         BDJawTrackerPanel,
+#         BDJawTracker_Operators,
+#     ]
+#     ############################################################################################
+#     # Registration :
+#     ############################################################################################
 
-    # Registration :
-    def register():
+#     # Registration :
+#     def register():
 
-        for module in addon_modules:
-            module.register()
+#         for module in addon_modules:
+#             module.register()
 
-    def unregister():
+#     def unregister():
 
-        for module in reversed(addon_modules):
-            module.unregister()
+#         for module in reversed(addon_modules):
+#             module.unregister()
 
-    if __name__ == "__main__":
-        register()
+#     if __name__ == "__main__":
+#         register()
 
-if NotFoundPkgs:
-    print("Not found packages : ", NotFoundPkgs)
-    ######################################################################################
-    if isConnected():
-        if NotFoundPkgs == ["cv2.aruco"]:
-            UninstallPipPackages(module="opencv-python")
-            PipInstallModules(modules=Requirements)
-        if "cv2" in NotFoundPkgs:
-            BlenderRequirementsPipInstall(path=requirements_path, modules=Requirements)
-        # Addon modules imports :
-        from . import BDJawTrackerProps, BDJawTrackerPanel
-        from .Operators import BDJawTracker_Operators
+# else:
 
-        addon_modules = [
-            BDJawTrackerProps,
-            BDJawTrackerPanel,
-            BDJawTracker_Operators,
-        ]
-        ############################################################################################
-        # Registration :
-        ############################################################################################
+#     for pkg in NotFoundPkgs:
+#         print(f"{pkg} : not installed")
+#     ######################################################################################
+#     if isConnected():
+#         BlenderRequirementsPipInstall(path=REQ_DIR, modules=NotFoundPkgs)
+#         # Addon modules imports :
+#         from . import BDJawTrackerProps, BDJawTrackerPanel
+#         from .Operators import BDJawTracker_Operators
 
-        # Registration :
-        def register():
+#         addon_modules = [
+#             BDJawTrackerProps,
+#             BDJawTrackerPanel,
+#             BDJawTracker_Operators,
+#         ]
+#         ############################################################################################
+#         # Registration :
+#         ############################################################################################
 
-            for module in addon_modules:
-                module.register()
+#         # Registration :
+#         def register():
 
-        def unregister():
+#             for module in addon_modules:
+#                 module.register()
 
-            for module in reversed(addon_modules):
-                module.unregister()
+#         def unregister():
 
-        if __name__ == "__main__":
-            register()
+#             for module in reversed(addon_modules):
+#                 module.unregister()
 
-    else:
+#         if __name__ == "__main__":
+#             register()
 
-        def register():
+#     else:
 
-            print("Please Check Internet Connexion and restart Blender!")
+#         def register():
 
-        def unregister():
-            pass
+#             print("Please Check Internet Connexion and restart Blender!")
 
-        if __name__ == "__main__":
-            register()
+#         def unregister():
+#             pass
+
+#         if __name__ == "__main__":
+#             register()

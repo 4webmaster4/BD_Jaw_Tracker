@@ -65,6 +65,33 @@ class BDJawTrackerProps(bpy.types.PropertyGroup):
         items=items, description="Tracking method", default="Fast resized(1/2)"
     )
 
+
+class BDJawTracker_ALIGN_Props(bpy.types.PropertyGroup):
+
+    #############################################################################################
+    # BDJawTracker_ALIGN Properties :
+    #############################################################################################
+    IcpVidDict: StringProperty(
+        name="IcpVidDict",
+        default="None",
+        description="ICP Vertices Pairs str(Dict)",
+    )
+
+    #######################
+    Progress_Bar: FloatProperty(
+        name="Progress_Bar",
+        description="Progress_Bar",
+        subtype="PERCENTAGE",
+        default=0.0,
+        min=0.0,
+        max=100.0,
+        soft_min=0.0,
+        soft_max=100.0,
+        step=1,
+        precision=1,
+    )
+
+    #######################
     AlignModalState: BoolProperty(description="Align Modal state ", default=False)
 
 
@@ -74,6 +101,7 @@ class BDJawTrackerProps(bpy.types.PropertyGroup):
 
 classes = [
     BDJawTrackerProps,
+    BDJawTracker_ALIGN_Props,
 ]
 
 
@@ -85,6 +113,9 @@ def register():
     bpy.types.Scene.BDJawTrackerProps = bpy.props.PointerProperty(
         type=BDJawTrackerProps
     )
+    bpy.types.Scene.BDJawTracker_ALIGN_Props = bpy.props.PointerProperty(
+        type=BDJawTracker_ALIGN_Props
+    )
 
 
 def unregister():
@@ -93,3 +124,4 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     del bpy.types.Scene.BDJawTrackerProps
+    del bpy.types.Scene.BDJawTracker_ALIGN_Props
