@@ -35,5 +35,5 @@ Video can be recorded on any device with focus control. We used video Ultra HD 4
 5. When progress is finished you may pick LowMarker and press Smooth Keyframes. Also you may align IncisialPoint LeftCond and RightCond in correct place and press Draw motion path.
 
 
-Links:
+## Links:
 https://github.com/kyle-bersani/opencv-examples
