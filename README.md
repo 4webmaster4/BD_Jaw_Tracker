@@ -34,3 +34,6 @@ Video can be recorded on any device with focus control. We used video Ultra HD 4
 4. Press Add Boards with Markers. Align UpMarker in correct place and press Start Read Data button.
 5. When progress is finished you may pick LowMarker and press Smooth Keyframes. Also you may align IncisialPoint LeftCond and RightCond in correct place and press Draw motion path.
 
+
+Links:
+https://github.com/kyle-bersani/opencv-examples
