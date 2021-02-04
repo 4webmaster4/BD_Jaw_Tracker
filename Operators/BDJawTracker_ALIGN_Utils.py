@@ -267,3 +267,60 @@ def CtxOverride(context):
         region3D,
     )
     return Override, area3D, space3D
+
+def AddOcclusalPoint(name, color, CollName=None):
+
+    loc = bpy.context.scene.cursor.location
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1.2, location=loc)
+    P = bpy.context.object
+    P.name = name
+    P.data.name = name + "_mesh"
+
+    if CollName:
+        MoveToCollection(P, CollName)
+
+    matName = f"{name}_Mat"
+    mat = bpy.data.materials.get(matName) or bpy.data.materials.new(matName)
+    mat.diffuse_color = color
+    mat.use_nodes = True
+    P.active_material = mat
+    P.show_name = True
+    return P
+
+def PointsToOcclusalPlane(ctx,Model, R_pt,A_pt,L_pt,color,subdiv) :
+    
+    Dim = max(Model.dimensions)*1.2
+    
+    Rco = R_pt.location
+    Aco = A_pt.location
+    Lco = L_pt.location
+
+    Center = (Rco+Aco+Lco)/3
+
+    
+    Z = (Rco-Center).cross((Aco-Center)).normalized()
+    X = Z.cross((Aco-Center)).normalized()
+    Y = Z.cross(X).normalized()
+
+    Mtx = Matrix((X, Y, Z)).to_4x4().transposed()
+    Mtx.translation = Center
+
+    bpy.ops.mesh.primitive_plane_add(ctx,size=Dim)
+    OcclusalPlane = bpy.context.object
+    name = "Occlusal_Plane"
+    OcclusalPlane.name = name
+    OcclusalPlane.data.name = f"{name}_Mesh"
+    OcclusalPlane.matrix_world = Mtx
+
+    matName = f"{name}_Mat"
+    mat = bpy.data.materials.get(matName) or bpy.data.materials.new(matName)
+    mat.diffuse_color = color
+    mat.use_nodes = True
+    OcclusalPlane.active_material = mat
+    if subdiv :
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.subdivide(number_cuts=50)
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    return OcclusalPlane
+    

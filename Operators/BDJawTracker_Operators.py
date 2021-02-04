@@ -10,6 +10,7 @@ import threading
 # Addon Imports :
 from .BDJawTracker_ALIGN_Utils import *
 
+
 # Global variables :
 if sys.platform == "win32":
     SS = "\\"
@@ -78,6 +79,75 @@ if sys.platform == "linux":
 ########################### BDJawTracker Operators ##############################
 #######################################################################################
 
+#######################################################################################
+# Set UpJaw Operator :
+#######################################################################################
+class BDJawTracker_OT_SetUpJaw(bpy.types.Operator):
+    """ will named UpJaw """
+
+    bl_idname = "bdjawtracker.setupjaw"
+    bl_label = "Pick Upper Jaw STL"
+
+    def execute(self, context):
+        BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
+        start = time.perf_counter()
+
+        UpJaw = bpy.context.active_object
+        
+        
+        if UpJaw:
+            UpJaw.name = 'UpJaw'
+            message = [
+                " DONE!",
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_03_VEC")
+            bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_VOLUME', center='MEDIAN')
+            return {"FINISHED"}
+        else:
+            message = [
+                " Pick Upper Jaw STL!",
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_02_VEC")
+            return {"CANCELLED"}
+
+#######################################################################################
+# Set UpJaw Operator :
+#######################################################################################
+class BDJawTracker_OT_SetLowJaw(bpy.types.Operator):
+    """ will named LowJaw """
+
+    bl_idname = "bdjawtracker.setlowjaw"
+    bl_label = "Pick Lower Jaw STL"
+
+    def execute(self, context):
+        BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
+        start = time.perf_counter()
+
+        LowJaw = bpy.context.active_object
+        bpy.context.view_layer.objects.active = LowJaw
+        bpy.context.view_layer.objects.active = LowJaw
+        UpJaw = bpy.data.objects['UpJaw']
+        
+        
+        if LowJaw:
+            LowJaw.name = 'LowJaw'
+            message = [
+                " DONE!",
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_03_VEC")
+            bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_VOLUME', center='MEDIAN')
+            bpy.ops.object.constraint_add(type='CHILD_OF')
+            bpy.context.object.constraints["Child Of"].target = UpJaw
+            bpy.context.object.constraints["Child Of"].name = "UpJaw_Child"
+            
+            return {"FINISHED"}
+        else:
+            message = [
+                " Pick Lower Jaw STL!",
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_02_VEC")
+            return {"CANCELLED"}
+                                
 #######################################################################################
 # AddBoards Operator :
 #######################################################################################
@@ -396,28 +466,29 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         Board_corners_upper = [
             np.array(
                 [
-                    [-0.026058, 0.018993, 0.001106],
-                    [-0.012144, 0.018993, 0.010849],
-                    [-0.012144, 0.002007, 0.010849],
-                    [-0.026058, 0.002007, 0.001106],
+                    [-0.026065, 0.019001, 0.00563],
+                    [-0.012138, 0.019001, 0.015382],
+                    [-0.012138, 0.001999, 0.015382], 
+                    [-0.026065, 0.001999, 0.00563],
                 ],
                 dtype=np.float32,
             ),
             np.array(
                 [
-                    [-0.0085, 0.019, 0.012],
-                    [0.0085, 0.019, 0.012],
-                    [0.0085, 0.002, 0.012],
-                    [-0.0085, 0.002, 0.012],
+
+                    [-0.0085, 0.019, 0.016528],
+                    [0.0085, 0.019, 0.016528],
+                    [0.0085, 0.002, 0.016528],
+                    [-0.0085, 0.002, 0.016528],
                 ],
                 dtype=np.float32,
             ),
             np.array(
                 [
-                    [0.012144, 0.018993, 0.010849],
-                    [0.026058, 0.018993, 0.001106],
-                    [0.026058, 0.002007, 0.001106],
-                    [0.012144, 0.002007, 0.010849],
+                    [0.012138, 0.019, 0.015382],
+                    [0.026064, 0.019, 0.00563],
+                    [0.026064, 0.002, 0.00563], 
+                    [0.012138, 0.002, 0.015382],
                 ],
                 dtype=np.float32,
             ),
@@ -428,28 +499,28 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         board_corners_lower = [
             np.array(
                 [
-                    [-0.026058, -0.002007, 0.001106],
-                    [-0.012144, -0.002007, 0.010849],
-                    [-0.012144, -0.018993, 0.010849],
-                    [-0.026058, -0.018993, 0.001106],
+                    [-0.026064, -0.002, 0.00563],
+                    [-0.012138, -0.002, 0.015382],
+                    [-0.012138, -0.019, 0.015382],
+                    [-0.026064, -0.019, 0.00563],
                 ],
                 dtype=np.float32,
             ),
             np.array(
                 [
-                    [-0.0085, -0.002, 0.012],
-                    [0.0085, -0.002, 0.012],
-                    [0.0085, -0.019, 0.012],
-                    [-0.0085, -0.019, 0.012],
+                    [-0.0085, -0.002, 0.016528],
+                    [0.0085, -0.002, 0.016528],
+                    [0.0085, -0.019, 0.016528],
+                    [-0.0085, -0.019, 0.016528],
                 ],
                 dtype=np.float32,
             ),
             np.array(
                 [
-                    [0.012144, -0.002007, 0.010849],
-                    [0.026058, -0.002007, 0.001106],
-                    [0.026058, -0.018993, 0.001106],
-                    [0.012144, -0.018993, 0.010849],
+                    [0.012138, -0.001999, 0.015382], 
+                    [0.026065, -0.001999, 0.00563],
+                    [0.026065, -0.019001, 0.00563],
+                    [0.012138, -0.019001, 0.015382],
                 ],
                 dtype=np.float32,
             ),
@@ -1288,12 +1359,14 @@ class BDJawTracker_ALIGN_OT_AlignPoints(bpy.types.Operator):
                     ###########################################################
 
                     bpy.ops.object.hide_view_clear(Override)
-                    bpy.ops.object.select_all(Override, action="DESELECT")
+                    bpy.ops.object.select_all(action='DESELECT')
+#                    bpy.ops.object.select_all(Override, action="DESELECT")
                     for obj in self.visibleObjects:
                         obj.select_set(True)
                         bpy.context.view_layer.objects.active = obj
                     bpy.ops.object.hide_view_set(Override, unselected=True)
-                    bpy.ops.object.select_all(Override, action="DESELECT")
+                    bpy.ops.object.select_all(action='DESELECT')
+#                    bpy.ops.object.select_all(Override, action="DESELECT")
                     bpy.context.scene.tool_settings.use_snap = False
                     space3D.shading.background_color = self.background_color
                     space3D.shading.background_type = self.background_type
@@ -1339,12 +1412,14 @@ class BDJawTracker_ALIGN_OT_AlignPoints(bpy.types.Operator):
                 ###########################################################
 
                 bpy.ops.object.hide_view_clear(Override)
-                bpy.ops.object.select_all(Override, action="DESELECT")
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
                 for obj in self.visibleObjects:
                     obj.select_set(True)
                     bpy.context.view_layer.objects.active = obj
                 bpy.ops.object.hide_view_set(Override, unselected=True)
-                bpy.ops.object.select_all(Override, action="DESELECT")
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
                 bpy.ops.wm.tool_set_by_id(Override, name="builtin.select")
                 bpy.context.scene.tool_settings.use_snap = False
                 space3D.shading.background_color = self.background_color
@@ -1434,7 +1509,8 @@ class BDJawTracker_ALIGN_OT_AlignPoints(bpy.types.Operator):
                 bpy.ops.screen.screen_full_area()
                 Override, area3D, space3D = CtxOverride(context)
                 bpy.ops.screen.region_toggle(Override, region_type="UI")
-                bpy.ops.object.select_all(Override, action="DESELECT")
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
                 context.window_manager.modal_handler_add(self)
                 
                 return {"RUNNING_MODAL"}
@@ -1477,12 +1553,295 @@ class BDJawTracker_ALIGN_OT_AlignPointsInfo(bpy.types.Operator):
 
 
 #############################################################################
+class BDJawTracker_OT_OcclusalPlaneInfo(bpy.types.Operator):
+    """ Add Align Refference points """
+
+    bl_idname = "bdjawtracker.occlusalplaneinfo"
+    bl_label = "INFO"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+
+        message = [
+            "\u2588 Select the target Object,",
+            "\u2588 Click <Occlusal Plane> button,",
+            f"      Press <Left Click> to Place Cursor,",
+            f"      Press <'R'> to Add Right Point (Red),",
+            f"      Press <'A'> to Add Anterior Point (Green),",
+            f"      Press <'L'> to Add Left Point (Blue),",
+            f"      Press <'DEL'> to delete Point,",
+            f"      Press <'ESC'> to Cancel Operation,",
+            f"      Press <'ENTER'> to execute Add occlusal plane.",
+        ]
+
+        ShowMessageBox2(message=message, title="INFO", icon="INFO")
+
+        return {"FINISHED"}
+
+
+class BDJawTracker_OT_AddOcclusalPlane(bpy.types.Operator):
+    """ Add Occlusal Plane"""
+
+    bl_idname = "bdjawtracker.addocclusalplane"
+    bl_label = "ADD OCCLUSAL PLANE"
+    bl_options = {"REGISTER", "UNDO"}
+
+    CollName = "Occlusal Points"
+    OcclusalPionts = []
+
+    def modal(self, context, event):
+
+        if (
+            event.type
+            in [
+                "LEFTMOUSE",
+                "RIGHTMOUSE",
+                "MIDDLEMOUSE",
+                "WHEELUPMOUSE",
+                "WHEELDOWNMOUSE",
+                "N",
+                "NUMPAD_2",
+                "NUMPAD_4",
+                "NUMPAD_6",
+                "NUMPAD_8",
+                "NUMPAD_1",
+                "NUMPAD_3",
+                "NUMPAD_5",
+                "NUMPAD_7",
+                "NUMPAD_9",
+            ]
+            and event.value == "PRESS"
+        ):
+
+            return {"PASS_THROUGH"}
+        #########################################
+        if event.type == "R":
+            # Add Right point :
+            if event.value == ("PRESS"):
+                color = (1,0,0,1) #red
+                CollName = self.CollName
+                name = "Right_Occlusal_Point"
+                OldPoint = bpy.data.objects.get(name)
+                if OldPoint :
+                    bpy.data.objects.remove(OldPoint)
+                NewPoint = AddOcclusalPoint(name, color, CollName)
+                self.RightPoint = NewPoint
+                bpy.ops.object.select_all(action="DESELECT")
+                self.OcclusalPoints = [obj for obj in bpy.context.scene.objects if obj.name.endswith("_Occlusal_Point") and not obj is self.RightPoint]
+                self.OcclusalPoints.append(self.RightPoint)
+
+        #########################################
+        if event.type == "A":
+            # Add Right point :
+            if event.value == ("PRESS"):
+                color = (0,1,0,1) # green
+                CollName = self.CollName
+                name = "Anterior_Occlusal_Point"
+                OldPoint = bpy.data.objects.get(name)
+                if OldPoint :
+                    bpy.data.objects.remove(OldPoint)
+                NewPoint = AddOcclusalPoint(name, color, CollName)
+                self.AnteriorPoint = NewPoint
+                bpy.ops.object.select_all(action="DESELECT")
+                self.OcclusalPoints = [obj for obj in bpy.context.scene.objects if obj.name.endswith("_Occlusal_Point") and not obj is self.AnteriorPoint]
+                self.OcclusalPoints.append(self.AnteriorPoint)
+        #########################################
+        if event.type == "L":
+            # Add Right point :
+            if event.value == ("PRESS"):
+                color = (0,0,1,1) # blue
+                CollName = self.CollName
+                name = "Left_Occlusal_Point"
+                OldPoint = bpy.data.objects.get(name)
+                if OldPoint :
+                    bpy.data.objects.remove(OldPoint)
+                NewPoint = AddOcclusalPoint(name, color, CollName)
+                self.LeftPoint = NewPoint
+                bpy.ops.object.select_all(action="DESELECT")
+                self.OcclusalPoints = [obj for obj in bpy.context.scene.objects if obj.name.endswith("_Occlusal_Point") and not obj is self.LeftPoint]
+                self.OcclusalPoints.append(self.LeftPoint)
+        #########################################
+
+        elif event.type == ("DEL"):
+
+            if self.OcclusalPionts :
+                self.OcclusalPionts.pop()
+
+            return {"PASS_THROUGH"}
+
+        elif event.type == "RET":
+            if event.value == ("PRESS"):
+
+                Override, area3D, space3D = CtxOverride(context)
+
+                OcclusalPlane = PointsToOcclusalPlane(Override,self.Target, self.RightPoint,self.AnteriorPoint,self.LeftPoint,color=(0.0, 0.0, 0.2, 0.7),subdiv=50)
+                self.OcclusalPoints = [obj for obj in bpy.context.scene.objects if obj.name.endswith("_Occlusal_Point")]
+                if self.OcclusalPoints :
+                    for P in self.OcclusalPoints :
+                        bpy.data.objects.remove(P)
+                ##########################################################
+                space3D.overlay.show_outline_selected = True
+                space3D.overlay.show_object_origins = True
+                space3D.overlay.show_annotation = True
+                space3D.overlay.show_text = True
+                space3D.overlay.show_extras = True
+                space3D.overlay.show_floor = True
+                space3D.overlay.show_axis_x = True
+                space3D.overlay.show_axis_y = True
+                ###########################################################
+
+                bpy.ops.object.hide_view_clear(Override)
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
+                for obj in self.visibleObjects:
+                    obj.select_set(True)
+                    bpy.context.view_layer.objects.active = obj
+                OcclusalPlane.select_set(True)
+                bpy.context.view_layer.objects.active = OcclusalPlane
+                bpy.ops.object.hide_view_set(Override, unselected=True)
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
+                OcclusalPlane.select_set(True)
+                bpy.ops.wm.tool_set_by_id(Override, name="builtin.select")
+                bpy.context.scene.tool_settings.use_snap = False
+                space3D.shading.background_color = self.background_color
+                space3D.shading.background_type = self.background_type
+                
+                bpy.context.scene.cursor.location = (0, 0, 0)
+                bpy.ops.screen.region_toggle(Override, region_type="UI")
+                bpy.ops.screen.screen_full_area(Override)
+
+                
+                ##########################################################
+
+                finish = Tcounter()
+                
+                return {"FINISHED"}
+
+        elif event.type == ("ESC"):
+
+            for P in self.OcclusalPionts :
+                bpy.data.objects.remove(P)
+
+            Override, area3D, space3D = CtxOverride(context)
+            ##########################################################
+            space3D.overlay.show_outline_selected = True
+            space3D.overlay.show_object_origins = True
+            space3D.overlay.show_annotation = True
+            space3D.overlay.show_text = True
+            space3D.overlay.show_extras = True
+            space3D.overlay.show_floor = True
+            space3D.overlay.show_axis_x = True
+            space3D.overlay.show_axis_y = True
+            ###########################################################
+
+            bpy.ops.object.hide_view_clear(Override)
+            bpy.ops.object.select_all(action='DESELECT')
+#            bpy.ops.object.select_all(Override, action="DESELECT")
+            for obj in self.visibleObjects:
+                obj.select_set(True)
+                bpy.context.view_layer.objects.active = obj
+            bpy.ops.object.hide_view_set(Override, unselected=True)
+            bpy.ops.object.select_all(action='DESELECT')
+#            bpy.ops.object.select_all(Override, action="DESELECT")
+            bpy.ops.wm.tool_set_by_id(Override, name="builtin.select")
+            bpy.context.scene.tool_settings.use_snap = False
+            space3D.shading.background_color = self.background_color
+            space3D.shading.background_type = self.background_type
+            
+            bpy.context.scene.cursor.location = (0, 0, 0)
+            bpy.ops.screen.region_toggle(Override, region_type="UI")
+            bpy.ops.screen.screen_full_area(Override)
+
+            message = [
+                    " The Occlusal Plane Operation was Cancelled!",
+                ]
+
+            ShowMessageBox2(message=message, icon="COLORSET_03_VEC")
+
+            return {"CANCELLED"}
+
+        return {"RUNNING_MODAL"}
+        
+
+    def invoke(self, context, event):
+        Condition_1 = bpy.context.selected_objects and bpy.context.active_object
+
+        if not Condition_1 :
+
+            message = [
+                "Please select Target object",
+            ]
+            ShowMessageBox2(message=message, icon="COLORSET_02_VEC")
+
+            return {"CANCELLED"}
+
+        else:
+
+            self.Target = context.active_object
+            bpy.context.scene.tool_settings.snap_elements = {"FACE"}
+
+
+            if context.space_data.type == "VIEW_3D":
+                
+                # Prepare scene  :
+                ##########################################################
+
+                bpy.context.space_data.overlay.show_outline_selected = False
+                bpy.context.space_data.overlay.show_object_origins = False
+                bpy.context.space_data.overlay.show_annotation = False
+                bpy.context.space_data.overlay.show_text = False
+                bpy.context.space_data.overlay.show_extras = False
+                bpy.context.space_data.overlay.show_floor = False
+                bpy.context.space_data.overlay.show_axis_x = False
+                bpy.context.space_data.overlay.show_axis_y = False
+                bpy.context.scene.tool_settings.use_snap = True
+                bpy.context.scene.tool_settings.snap_elements = {"FACE"}
+                bpy.context.scene.tool_settings.transform_pivot_point = (
+                    "INDIVIDUAL_ORIGINS"
+                )
+                bpy.ops.wm.tool_set_by_id(name="builtin.cursor")
+                bpy.ops.object.hide_view_set(unselected=True)
+
+                ###########################################################
+                self.TargetObject = bpy.context.active_object
+                
+
+                self.TargetPoints = []
+
+            
+                self.visibleObjects = bpy.context.visible_objects.copy()
+                self.background_type = bpy.context.space_data.shading.background_type
+                bpy.context.space_data.shading.background_type = "VIEWPORT"
+                self.background_color = tuple(
+                    bpy.context.space_data.shading.background_color
+                )
+                bpy.context.space_data.shading.background_color = (0.0, 0.0, 0.0)
+
+                bpy.ops.screen.screen_full_area()
+                Override, area3D, space3D = CtxOverride(context)
+                bpy.ops.screen.region_toggle(Override, region_type="UI")
+                bpy.ops.object.select_all(action='DESELECT')
+#                bpy.ops.object.select_all(Override, action="DESELECT")
+                context.window_manager.modal_handler_add(self)
+
+                return {"RUNNING_MODAL"}
+
+            else:
+
+                self.report({"WARNING"}, "Active space must be a View3d")
+
+                return {"CANCELLED"}
+
+
 
 #################################################################################################
 # Registration :
 #################################################################################################
 
 classes = [
+    BDJawTracker_OT_SetUpJaw,
+    BDJawTracker_OT_SetLowJaw,
     BDJawTracker_OT_AddBoards,
     BDJawTracker_OT_Calibration,
     BDJawTracker_OT_StarTrack,
@@ -1491,6 +1850,8 @@ classes = [
     BDJawTracker_OT_DrawPath,
     BDJawTracker_ALIGN_OT_AlignPoints,
     BDJawTracker_ALIGN_OT_AlignPointsInfo,
+    BDJawTracker_OT_AddOcclusalPlane,
+    BDJawTracker_OT_OcclusalPlaneInfo,
 ]
 
 

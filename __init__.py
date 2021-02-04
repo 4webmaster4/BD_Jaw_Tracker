@@ -56,7 +56,7 @@ if exists(REQ_ZIP):
     with zipfile.ZipFile(REQ_ZIP, "r") as Zip_File:
         Zip_File.extractall(REQ_DIR)
     os.remove(REQ_ZIP)
-print("Requirements Unzipped!")
+#print("Requirements Unzipped!")
 
 #############################################################
 
@@ -69,11 +69,13 @@ for path in sysPaths:
 # Addon modules imports :
 from . import BDJawTrackerProps, BDJawTrackerPanel
 from .Operators import BDJawTracker_Operators
+from .Operators import BDJawTracker_WAXUP_Operators
 
 addon_modules = [
     BDJawTrackerProps,
     BDJawTrackerPanel,
     BDJawTracker_Operators,
+    BDJawTracker_WAXUP_Operators,
 ]
 ############################################################################################
 # Registration :

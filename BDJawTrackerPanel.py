@@ -34,12 +34,13 @@ class BDJAWTRACKER_PT_MainPanel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"  # always the same if you want side panel
     bl_region_type = "UI"  # always the same if you want side panel
     bl_category = "BDJ-Tracker"  # this is the vertical name in the side usualy the name of addon :)
+    bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         row = box.row()
-        row.alert = True
+        row.alert = False
         row.alignment = "CENTER"
         row.label(text=f"VERSION : {Addon_Version_Date}")
 
@@ -141,6 +142,7 @@ class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
         green_icon = "COLORSET_03_VEC"
         CalibFile = join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
+        #UpJaw = bpy.data.objects['UpJaw']
 
         layout = self.layout
 
@@ -152,6 +154,14 @@ class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
         col.prop(BDJawTracker_Props, "TrackedData", text="")
 
         # row.prop(BDJawTracker_Props, "TrackedData", text="Tracked data file")
+        row = layout.row()
+        row.operator("bdjawtracker.setupjaw")
+        if bpy.context.scene.objects.get("UpJaw") is not None:
+            row.operator("bdjawtracker.setlowjaw")
+        else:            
+            row.alert = True
+            row.alignment = "CENTER"
+            row.label(text="Set UpJaw First!")
         row = layout.row()
         row.operator("bdjawtracker.addboards")
         row = layout.row()
@@ -241,6 +251,85 @@ class BDJAWTRACKER_PT_AlignPanel(bpy.types.Panel):
             row.label(text="WAITING FOR ALIGNEMENT...")
 
 
+##################################################################################
+class BDJAWTRACKER_PT_Waxup(bpy.types.Panel):
+    """ WaxUp Panel"""
+
+    bl_idname = "BDJAWTRACKER_PT_Waxup"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"  # blender 2.7 and lower = TOOLS
+    bl_category = "BDJ-Tracker"
+    bl_label = "WAXUP TOOLS :"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        BDJawTracker_WAXUP_Props = context.scene.BDJawTracker_WAXUP_Props
+#        scn = bpy.context.scene
+#        Occlusal_Plane = bpy.data.objects.get["Occlusal_Plane"]
+#        if bpy.data.objects.get("ObjectName") is not None:
+        layout = self.layout
+        row = layout.row()
+        row.operator("bdjawtracker.lowjawchildtolowmarker", text="Start LowJaw Movings", icon="LIBRARY_DATA_INDIRECT")
+
+        
+        layout = self.layout
+        split = layout.split(factor=2 / 3, align=False)
+        col = split.column()
+        row = col.row()
+        row.operator("bdjawtracker.addocclusalplane", text="Occlusal Plane")
+        col = split.column()
+        row = col.row()
+#        row.alert = True
+        row.operator("bdjawtracker.occlusalplaneinfo", text="INFO", icon="INFO")
+        
+        
+        
+        layout = self.layout        
+        row = layout.row()
+        row.prop(BDJawTracker_WAXUP_Props, "BakeLowPlane", text="Bake Lower")
+        row.prop(BDJawTracker_WAXUP_Props, "BakeUpPlane", text="Bake Upper")
+        Occlusal_Plane = bpy.data.objects.get("Occlusal_Plane")
+        UpJaw = bpy.data.objects.get("UpJaw")
+        LowJaw = bpy.data.objects.get("LowJaw")
+
+       
+        if BDJawTracker_WAXUP_Props.BakeLowPlane or BDJawTracker_WAXUP_Props.BakeUpPlane:         
+            if Occlusal_Plane is not None and UpJaw is not None and LowJaw is not None:
+                row = layout.row()
+                row.operator("bdjawtracker.bakeplane", text="START", icon="ONIONSKIN_ON")
+            
+            elif Occlusal_Plane is None:
+                row = layout.row()
+                row.alert = True
+                row.label(text="Occlusal plane is not detected!")
+            elif UpJaw is None:
+                row = layout.row()
+                row.alert = True
+                row.label(text="UpJaw is not detected!")
+            elif LowJaw is None:
+                row = layout.row()
+                row.alert = True
+                row.label(text="LowJaw is not detected!")
+                
+        
+        
+
+
+        
+        
+        if (BDJawTracker_WAXUP_Props.BakeLowPlane == True):
+            print ("Low Enabled")
+        else:
+            print ("Low Disabled")
+
+        if (BDJawTracker_WAXUP_Props.BakeUpPlane == True):
+            print ("Up Enabled")
+        else:
+            print ("Up Disabled")
+        
+
+
+
 #################################################################################################
 # Registration :
 #################################################################################################
@@ -250,6 +339,7 @@ classes = [
     BDJAWTRACKER_PT_DataPreparation,
     BDJAWTRACKER_PT_DataRead,
     BDJAWTRACKER_PT_AlignPanel,
+    BDJAWTRACKER_PT_Waxup,
 ]
 
 

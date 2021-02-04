@@ -94,6 +94,21 @@ class BDJawTracker_ALIGN_Props(bpy.types.PropertyGroup):
     #######################
     AlignModalState: BoolProperty(description="Align Modal state ", default=False)
 
+class BDJawTracker_WAXUP_Props(bpy.types.PropertyGroup):
+
+    #############################################################################################
+    # BDJawTracker_WAXUP Properties :
+    #############################################################################################
+
+    BakeLowPlane: BoolProperty(
+        name="Enable or Disable Low occlusal plane baking", description="Lower occlusal plane baking", default = False        
+    )
+
+    BakeUpPlane: BoolProperty(
+        name="Enable or Disable Up occlusal plane baking", description="Upper occlusal plane baking", default = False        
+    )
+
+    
 
 #################################################################################################
 # Registration :
@@ -102,6 +117,7 @@ class BDJawTracker_ALIGN_Props(bpy.types.PropertyGroup):
 classes = [
     BDJawTrackerProps,
     BDJawTracker_ALIGN_Props,
+    BDJawTracker_WAXUP_Props,
 ]
 
 
@@ -116,6 +132,9 @@ def register():
     bpy.types.Scene.BDJawTracker_ALIGN_Props = bpy.props.PointerProperty(
         type=BDJawTracker_ALIGN_Props
     )
+    bpy.types.Scene.BDJawTracker_WAXUP_Props = bpy.props.PointerProperty(
+        type=BDJawTracker_WAXUP_Props
+    )
 
 
 def unregister():
@@ -125,3 +144,4 @@ def unregister():
 
     del bpy.types.Scene.BDJawTrackerProps
     del bpy.types.Scene.BDJawTracker_ALIGN_Props
+    del bpy.types.Scene.BDJawTracker_WAXUP_Props
