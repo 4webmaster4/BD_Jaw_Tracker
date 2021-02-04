@@ -139,9 +139,11 @@ def register():
 
 def unregister():
 
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
-
     del bpy.types.Scene.BDJawTrackerProps
     del bpy.types.Scene.BDJawTracker_ALIGN_Props
     del bpy.types.Scene.BDJawTracker_WAXUP_Props
+
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+
+    

@@ -1,5 +1,7 @@
 import os, sys, time, bpy
 import mathutils
+import cv2
+from cv2 import aruco
 
 # Global Variables :
 
@@ -8,7 +10,7 @@ import mathutils
 #######################################################################################
 
 
-def ShowMessageBox2(message=[], title="INFO", icon="INFO"):
+def ShowMessageBox(message=[], title="INFO", icon="INFO"):
     def draw(self, context):
         for txtLine in message:
             self.layout.label(text=txtLine)
@@ -17,68 +19,6 @@ def ShowMessageBox2(message=[], title="INFO", icon="INFO"):
 
 #######################################################################################
 
-
-if sys.platform == "win32":
-    SS = "\\"
-    try:
-        from ..Resources.Requirements import cv2
-    except ImportError:
-        try:
-            import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        from ..Resources.Requirements.cv2 import aruco
-    except ImportError:
-        try:
-            import cv2.aruco as aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-if sys.platform == "darwin":
-    SS = "/"
-    try:
-        import cv2
-    except ImportError:
-        try:
-            from ..Resources.Requirements import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        import cv2.aruco as aruco
-    except ImportError:
-        try:
-            from ..Resources.Requirements.cv2 import aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-
-if sys.platform == "linux":
-    SS = "/"
-    try:
-        import cv2
-    except ImportError:
-        try:
-            from ..Resources.Requirements import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        import cv2.aruco as aruco
-    except ImportError:
-        try:
-            from ..Resources.Requirements.cv2 import aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
 
 
 #######################################################################################

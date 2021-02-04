@@ -7,72 +7,11 @@ import pickle
 import glob
 import threading
 
+import cv2
+import cv2.aruco as aruco
 # Addon Imports :
 from .BDJawTracker_ALIGN_Utils import *
 
-
-# Global variables :
-if sys.platform == "win32":
-    SS = "\\"
-    try:
-        from ..Resources.Requirements import cv2
-    except ImportError:
-        try:
-            import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        from ..Resources.Requirements.cv2 import aruco
-    except ImportError:
-        try:
-            import cv2.aruco as aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-if sys.platform == "darwin":
-    SS = "/"
-    try:
-        import cv2
-    except ImportError:
-        try:
-            from ..Resources.Requirements import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        import cv2.aruco as aruco
-    except ImportError:
-        try:
-            from ..Resources.Requirements.cv2 import aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-
-if sys.platform == "linux":
-    SS = "/"
-    try:
-        import cv2
-    except ImportError:
-        try:
-            from ..Resources.Requirements import cv2
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
-    try:
-        import cv2.aruco as aruco
-    except ImportError:
-        try:
-            from ..Resources.Requirements.cv2 import aruco
-        except ImportError:
-            print(
-                "Could not import Requirements, please contact Addon Develloper for support!"
-            )
 
 
 #######################################################################################
@@ -168,7 +107,7 @@ class BDJawTracker_OT_AddBoards(bpy.types.Operator):
         Units.length_unit = "MILLIMETERS"
 
         addon_dir = dirname(dirname(abspath(__file__)))
-        file_path = join(addon_dir, f"Resources{SS}boards.blend")
+        file_path = join(addon_dir,"Resources", "boards.blend")
 
         filepathUp = join(file_path, "UpMarker")
         filepathLow = join(file_path, "UpMarker")
