@@ -115,7 +115,7 @@ def RefPointsToTransformMatrix(TargetRefPoints, SourceRefPoints):
     return TransformMatrix
 
 
-def KdIcpPairs(SourceVcoList, TargetVcolist, VertsLimite=5000):
+def KdIcpPairs(SourceVcoList, TargetVcolist, VertsLimite=6000):
     start = Tcounter()
     # print("KD processing start...")
     SourceKdList, TargetKdList, DistList, SourceIndexList, TargetIndexList = (

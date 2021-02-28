@@ -1,5 +1,6 @@
 import bpy, os, sys
 from os.path import join, dirname, exists, abspath
+import glob
 
 ##########################################
 if sys.platform == "win32":
@@ -63,7 +64,7 @@ class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
         green_icon = "COLORSET_03_VEC"
         CalibFile = join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
-
+        
         # Draw Addon UI :
 
         layout = self.layout
@@ -71,7 +72,7 @@ class BDJAWTRACKER_PT_DataPreparation(bpy.types.Panel):
         row = layout.row()
         split = row.split()
         col = split.column()
-        col.label(text="Project Directory :")
+        col.label(text="Directory with calibration file:")
         col = split.column()
         col.prop(BDJawTracker_Props, "UserProjectDir", text="")
 
@@ -142,8 +143,7 @@ class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
         green_icon = "COLORSET_03_VEC"
         CalibFile = join(BDJawTracker_Props.UserProjectDir, "calibration.pckl")
         active_object = context.active_object
-        #UpJaw = bpy.data.objects['UpJaw']
-
+        
         layout = self.layout
 
         row = layout.row()
@@ -159,15 +159,20 @@ class BDJAWTRACKER_PT_DataRead(bpy.types.Panel):
         if bpy.context.scene.objects.get("UpJaw") is not None:
             row.operator("bdjawtracker.setlowjaw")
         else:            
-            row.alert = True
-            row.alignment = "CENTER"
+            row.alert = True            
             row.label(text="Set UpJaw First!")
         row = layout.row()
         row.operator("bdjawtracker.addboards")
         row = layout.row()
         row.operator("bdjawtracker.datareader")
         row = layout.row()
-        row.operator("bdjawtracker.smoothkeyframes")
+        if bpy.data.objects.get("LowMarker") is not None:
+            row.operator("bdjawtracker.smoothkeyframes")
+        else:
+            row.alert = True
+            row.alignment = "CENTER"
+            row.label(text="LowMarker not found")
+        row.operator
         row = layout.row()
         row.operator("bdjawtracker.drawpath")
 

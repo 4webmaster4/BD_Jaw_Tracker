@@ -64,7 +64,6 @@ class BDJawTracker_OT_SetLowJaw(bpy.types.Operator):
 
         LowJaw = bpy.context.active_object
         bpy.context.view_layer.objects.active = LowJaw
-        bpy.context.view_layer.objects.active = LowJaw
         UpJaw = bpy.data.objects['UpJaw']
         
         
@@ -110,17 +109,12 @@ class BDJawTracker_OT_AddBoards(bpy.types.Operator):
         file_path = join(addon_dir,"Resources", "boards.blend")
 
         filepathUp = join(file_path, "UpMarker")
-        filepathLow = join(file_path, "UpMarker")
+        filepathLow = join(file_path, "LowMarker")
         directory = join(file_path, "Object")
         filenameUp = "UpMarker"
         filenameLow = "LowMarker"
 
-        bpy.ops.wm.append(filepath=filepathUp, filename=filenameUp, directory=directory)
-
-        bpy.ops.wm.append(
-            filepath=filepathLow, filename=filenameLow, directory=directory
-        )
-
+        
         ########################################################################################
         # Add Emptys
 
@@ -138,8 +132,36 @@ class BDJawTracker_OT_AddBoards(bpy.types.Operator):
                     if Coll is not NewColl:
                         Coll.objects.unlink(obj)
 
-        "PLAIN_AXES"
+        
 
+        # Add Boards
+        
+        bpy.ops.wm.append(filepath=filepathUp, filename=filenameUp, directory=directory
+        )
+        UpMarker = bpy.data.objects['UpMarker']
+        MoveToCollection(UpMarker, 'Markers')
+        bpy.ops.object.select_all(action='DESELECT')        
+        UpMarker.select_set(True)
+        bpy.context.view_layer.objects.active = UpMarker
+        bpy.ops.object.modifier_add(type='REMESH')
+        bpy.context.object.modifiers["Remesh"].mode = 'SHARP'
+        bpy.context.object.modifiers["Remesh"].octree_depth = 8
+        bpy.ops.object.modifier_apply(modifier="Remesh")
+
+
+        bpy.ops.wm.append(
+            filepath=filepathLow, filename=filenameLow, directory=directory,
+        )
+        LowMarker = bpy.data.objects['LowMarker']
+        MoveToCollection(LowMarker, 'Markers')
+        LowMarker.select_set(True)
+        bpy.context.view_layer.objects.active = LowMarker
+        bpy.ops.object.modifier_add(type='REMESH')
+        bpy.context.object.modifiers["Remesh"].mode = 'SHARP'
+        bpy.context.object.modifiers["Remesh"].octree_depth = 8
+        bpy.ops.object.modifier_apply(modifier="Remesh")
+
+        # Add Emptys       
         def AddEmpty(type, name, location, radius, CollName=None):
             bpy.ops.object.empty_add(type=type, radius=radius, location=location)
             obj = bpy.context.object
@@ -202,7 +224,7 @@ class BDJawTracker_OT_Calibration(bpy.types.Operator):
         # 'camera-pic-of-charucoboard-<NUMBER>.jpg'
         # All images used should be the same size, which if taken with the same camera shouldn't be a problem
         # images = BDJawTracker_Props.UserProjectDir
-        # images = glob.glob(BDJawTrackerProps.UserProjectDir+'*.*')
+        # images = glob.glob(AbsPath(BDJawTrackerProps.UserProjectDir+'*.*')
         images = glob.glob(join(BDJawTrackerProps.CalibImages, "*"))
         # Loop through images glob'ed
         if images:
@@ -388,9 +410,20 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         if BDJawTrackerProps.TrackingType == "Precision":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_APRILTAG
             resize=1
+            ARUCO_PARAMETERS.aprilTagDeglitch = 0           
+            ARUCO_PARAMETERS.aprilTagMinWhiteBlackDiff = 30
+            ARUCO_PARAMETERS.aprilTagMaxLineFitMse = 20
+            ARUCO_PARAMETERS.aprilTagCriticalRad = 0.1745329201221466 *6
+            ARUCO_PARAMETERS.aprilTagMinClusterPixels = 5  
+            ARUCO_PARAMETERS.maxErroneousBitsInBorderRate = 0.35
+            ARUCO_PARAMETERS.errorCorrectionRate = 1.0                    
+            ARUCO_PARAMETERS.minMarkerPerimeterRate = 0.05                  
+            ARUCO_PARAMETERS.maxMarkerPerimeterRate = 4                  
+            ARUCO_PARAMETERS.polygonalApproxAccuracyRate = 0.05
+            ARUCO_PARAMETERS.minCornerDistanceRate = 0.05
         elif BDJawTrackerProps.TrackingType == "Fast":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
-            resize=1
+            resize=2
         elif BDJawTrackerProps.TrackingType == "Precision resized(1/2)":
             ARUCO_PARAMETERS.cornerRefinementMethod = aruco.CORNER_REFINE_APRILTAG
             resize=2
@@ -400,8 +433,8 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
 
         CalibFile = join(BDJawTrackerProps.UserProjectDir, "calibration.pckl")
 
+
         ##############################################################################################
-        # Upper board corners
         Board_corners_upper = [
             np.array(
                 [
@@ -433,7 +466,6 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
             ),
         ]
         #############################################################################################
-        # Lower board corners
 
         board_corners_lower = [
             np.array(
@@ -451,6 +483,7 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
                     [0.0085, -0.002, 0.016528],
                     [0.0085, -0.019, 0.016528],
                     [-0.0085, -0.019, 0.016528],
+
                 ],
                 dtype=np.float32,
             ),
@@ -465,7 +498,9 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
             ),
         ]
 
-        #############################################################################################
+                #############################################################################################
+
+
 
         # Initiate 2 Bords LowBord and UpBoard
         LowBoard_ids = np.array([[3], [4], [5]], dtype=np.int32)
@@ -535,15 +570,15 @@ class BDJawTracker_OT_StarTrack(bpy.types.Operator):
         while True:
             success, img = cap.read()
             imgGrey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            imgBlur = cv2.GaussianBlur(imgGrey, (7, 7), cv2.BORDER_DEFAULT)
+            
             if resize == 2:
-                imgBlur = cv2.pyrDown(imgBlur)  # reduce the image by 2 times
+                imgGrey = cv2.pyrDown(imgGrey)  # reduce the image by 2 times
 
             cv2.namedWindow("img", cv2.WINDOW_NORMAL)
 
             # lists of ids and the corners beloning to each id
             corners, ids, rejected = aruco.detectMarkers(
-                imgBlur,
+                imgGrey,
                 ARUCO_DICT,
                 parameters=ARUCO_PARAMETERS,
                 cameraMatrix=cameraMatrix,
@@ -982,24 +1017,29 @@ class BDJawTracker_OT_SmoothKeyframes(bpy.types.Operator):
     def execute(self, context):
         BDJawTrackerProps = bpy.context.scene.BDJawTrackerProps
         start = time.perf_counter()
-        active_object = bpy.context.selected_objects
+#        active_object = bpy.context.selected_objects
+                
+        LowMarker = bpy.data.objects.get("LowMarker")
+        bpy.ops.object.select_all(action='DESELECT')
+        LowMarker.hide_set(False)        
+        LowMarker.select_set(True)
+        bpy.context.view_layer.objects.active = LowMarker
 
-        if not active_object:
-            print("Pick Object!")
-            self.report({"ERROR"}, "Pick Lower board!")
-        else:
-            current_area = bpy.context.area.type
-            layer = bpy.context.view_layer
+        current_area = bpy.context.area.type
+        layer = bpy.context.view_layer
 
-            # change to graph editor
-            bpy.context.area.type = "GRAPH_EDITOR"
+        # change to graph editor
+        bpy.context.area.type = "GRAPH_EDITOR"
 
-            # smooth curves of all selected bones
-            bpy.ops.graph.smooth()
+        # smooth curves of all selected bones
+        bpy.ops.graph.smooth()
 
-            # switch back to original area
-            bpy.context.area.type = current_area
-            self.report({"INFO"}, "DONE!")
+        # switch back to original area
+        bpy.context.area.type = current_area                                    
+        bpy.ops.object.select_all(action='DESELECT')
+        message = [" DONE!"]
+        ShowMessageBox2(message=message, icon="COLORSET_03_VEC")            
+            
 
         return {"FINISHED"}
 
@@ -1613,7 +1653,7 @@ class BDJawTracker_OT_AddOcclusalPlane(bpy.types.Operator):
 
                 Override, area3D, space3D = CtxOverride(context)
 
-                OcclusalPlane = PointsToOcclusalPlane(Override,self.Target, self.RightPoint,self.AnteriorPoint,self.LeftPoint,color=(0.0, 0.0, 0.2, 0.7),subdiv=50)
+                OcclusalPlane = PointsToOcclusalPlane(Override,self.Target, self.RightPoint,self.AnteriorPoint,self.LeftPoint,color=(0.55, 0.44, 0.8, 1.0),subdiv=50)
                 self.OcclusalPoints = [obj for obj in bpy.context.scene.objects if obj.name.endswith("_Occlusal_Point")]
                 if self.OcclusalPoints :
                     for P in self.OcclusalPoints :

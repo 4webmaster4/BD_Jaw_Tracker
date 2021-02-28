@@ -38,7 +38,6 @@ class BDJawTracker_OT_LowJawChild(bpy.types.Operator):
         LowJaw = bpy.data.objects['LowJaw']
         LowJaw.select_set(True)
         bpy.context.view_layer.objects.active = LowJaw
-        bpy.context.view_layer.objects.active = LowJaw
         My_constraint = LowJaw.constraints.get('LowMarker_Child')
         
         if My_constraint:
@@ -118,7 +117,6 @@ class BDJawTracker_OT_BakePlane(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')        
         UpJaw.select_set(True)
         bpy.context.view_layer.objects.active = UpJaw
-        bpy.context.view_layer.objects.active = UpJaw
 
         bpy.ops.object.duplicate()
         UpJawMoved = bpy.context.object
@@ -134,7 +132,6 @@ class BDJawTracker_OT_BakePlane(bpy.types.Operator):
         Occlusal_Plane = bpy.data.objects['Occlusal_Plane']
         Occlusal_Plane.select_set(True)
 
-        bpy.context.view_layer.objects.active = Occlusal_Plane
         bpy.context.view_layer.objects.active = Occlusal_Plane
         
         bpy.ops.object.duplicate()
@@ -201,8 +198,7 @@ class BDJawTracker_OT_BakePlane(bpy.types.Operator):
         Occlusal_Plane.select_set(True)
         
         bpy.context.view_layer.objects.active = Occlusal_Plane
-        bpy.context.view_layer.objects.active = Occlusal_Plane
-        
+      
 
 
         bpy.ops.object.duplicate()
