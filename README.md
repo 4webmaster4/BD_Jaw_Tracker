@@ -11,7 +11,8 @@ Video can be recorded on any device with focus control. We used video Ultra HD 4
 ## Plugin installation
 
 1. Press Code(green button) -> Download zip
-2. Start Blender 3d(you may download it from https://www.blender.org/). Go to Edit -> Preferences. In Addons tab press Install and pick BD_Jaw_Tracker-main.zip 
+2. Start Blender 3d(you may download it from https://www.blender.org/). Go to Edit -> Preferences. In Addons tab press Install and pick BD_Jaw_Tracker-BD_Jaw_Tracker_WIN.zip 
+3. Select BDJ-Tracker sidebar and press button INSTALL BD_Jaw_Tracker MODULES. After finish, you will get message restart Blender.
 
 
 ## Calibration
